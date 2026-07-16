@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>人际交往 · 思维导图级联选择器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 20px 60px rgba(0, 20, 40, 0.12);
+            padding: 40px 48px 48px;
+            transition: all 0.2s;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1a2634;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        h1 small {
+            font-size: 16px;
+            font-weight: 400;
+            color: #6b7a8a;
+            margin-left: 6px;
+        }
+        .subtitle {
+            color: #6b7a8a;
+            font-size: 15px;
+            border-left: 4px solid #4a90d9;
+            padding-left: 16px;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        /* 级联选择区 */
+        .cascade-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px 20px;
+            align-items: center;
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 24px 28px;
+            margin-bottom: 32px;
+            border: 1px solid #e9edf2;
+        }
+
+        .cascade-group {
+            display: flex;
+            align-items: center;
+            gap: 8px 12px;
+            flex-wrap: wrap;
+            flex: 1 1 180px;
+        }
+        .cascade-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #3d4a5a;
+            white-space: nowrap;
+            min-width: 52px;
+        }
+        .cascade-group select {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1.5px solid #dce2ea;
+            background: #ffffff;
+            font-size: 15px;
+            color: #1a2634;
+            outline: none;
+            transition: 0.15s;
+            cursor: pointer;
+            appearance: auto;
+            font-family: inherit;
+        }
+        .cascade-group select:focus {
+            border-color: #4a90d9;
+            box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
+        }
+        .cascade-group select:disabled {
+            background: #f2f5f9;
+            color: #9aabbb;
+            cursor: not-allowed;
+            border-color: #e2e7ee;
+        }
+
+        .cascade-arrow {
+            color: #b0c0cf;
+            font-size: 20px;
+            font-weight: 300;
+            padding: 0 4px;
+            user-select: none;
+        }
+
+        /* 结果展示 */
+        .result-area {
+            background: #f5f9ff;
+            border-radius: 20px;
+            padding: 28px 32px;
+            border: 1px solid #e2edf7;
+            min-height: 120px;
+            transition: 0.2s;
+            margin-bottom: 20px;
+        }
+        .result-area .label {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6b8aaa;
+            margin-bottom: 10px;
+        }
+        .result-area .path {
+            font-size: 14px;
+            color: #4a6a8a;
+            background: #eaf1fa;
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 30px;
+            margin-bottom: 14px;
+        }
+        .result-area .content {
+            font-size: 18px;
+            line-height: 1.7;
+            color: #1a2a3a;
+            font-weight: 500;
+            padding: 6px 0 2px;
+        }
+        .result-area .placeholder {
+            color: #9aabbc;
+            font-weight: 400;
+            font-size: 16px;
+        }
+        .result-area .empty-hint {
+            color: #b0c0cf;
+            font-size: 15px;
+        }
+
+        /* 路径面包屑 */
+        .breadcrumb {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 10px;
+            align-items: center;
+            padding: 10px 0 4px;
+            font-size: 14px;
+            color: #4a6a8a;
+        }
+        .breadcrumb span {
+            background: #eef3f9;
+            padding: 2px 14px;
+            border-radius: 30px;
+            font-weight: 500;
+            color: #2a4a6a;
+        }
+        .breadcrumb .sep {
+            background: none;
+            padding: 0;
+            color: #b0c0cf;
+            font-weight: 300;
+        }
+
+        /* 响应式 */
+        @media (max-width: 700px) {
+            .container {
+                padding: 24px 18px 28px;
+            }
+            .cascade-row {
+                padding: 18px 16px;
+                gap: 12px;
+            }
+            .cascade-group {
+                flex: 1 1 100%;
+            }
+            .cascade-group select {
+                min-width: 80px;
+            }
+            .cascade-arrow {
+                display: none;
+            }
+            .result-area {
+                padding: 20px 18px;
+            }
+            .result-area .content {
+                font-size: 16px;
+            }
+            h1 {
+                font-size: 22px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 16px 12px 20px;
+            }
+            .cascade-group label {
+                font-size: 13px;
+                min-width: 40px;
+            }
+            .cascade-group select {
+                font-size: 13px;
+                padding: 8px 10px;
+            }
+            .result-area .content {
+                font-size: 15px;
+            }
+        }
+
+        /* 重置按钮 */
+        .reset-btn {
+            background: transparent;
+            border: 1.5px solid #dce2ea;
+            border-radius: 30px;
+            padding: 8px 20px;
+            font-size: 14px;
+            color: #5a6a7a;
+            cursor: pointer;
+            transition: 0.15s;
+            font-family: inherit;
+            margin-left: auto;
+        }
+        .reset-btn:hover {
+            background: #eef3f9;
+            border-color: #b0c0cf;
+            color: #1a2a3a;
+        }
+        .reset-btn:active {
+            transform: scale(0.96);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>
+            🌐 人际交往
+            <small>思维导图 · 级联选择</small>
+        </h1>
+        <div class="subtitle">
+            依次选择每一层级的选项，逐步定位到具体的人际关系或交往现象，查看详细描述。
+        </div>
+
+        <!-- 级联选择行 -->
+        <div class="cascade-row" id="cascadeRow">
+            <!-- 层级1：根节点（固定） -->
+            <div class="cascade-group">
+                <label>层级1</label>
+                <select id="selLevel1" disabled>
+                    <option value="root">人际交往</option>
+                </select>
+            </div>
+            <span class="cascade-arrow">▸</span>
+
+            <!-- 层级2 -->
+            <div class="cascade-group">
+                <label>层级2</label>
+                <select id="selLevel2">
+                    <option value="">— 请选择 —</option>
+                </select>
+            </div>
+            <span class="cascade-arrow">▸</span>
+
+            <!-- 层级3 -->
+            <div class="cascade-group">
+                <label>层级3</label>
+                <select id="selLevel3" disabled>
+                    <option value="">— 请先选上层 —</option>
+                </select>
+            </div>
+            <span class="cascade-arrow">▸</span>
+
+            <!-- 层级4 -->
+            <div class="cascade-group">
+                <label>层级4</label>
+                <select id="selLevel4" disabled>
+                    <option value="">— 请先选上层 —</option>
+                </select>
+            </div>
+            <span class="cascade-arrow">▸</span>
+
+            <!-- 层级5（结果） -->
+            <div class="cascade-group">
+                <label>结果</label>
+                <select id="selLevel5" disabled>
+                    <option value="">— 请先选上层 —</option>
+                </select>
+            </div>
+
+            <button class="reset-btn" id="resetBtn">⟳ 重置</button>
+        </div>
+
+        <!-- 结果展示区 -->
+        <div class="result-area" id="resultArea">
+            <div class="label">📌 结果描述</div>
+            <div class="breadcrumb" id="breadcrumb">
+                <span>人际交往</span>
+            </div>
+            <div class="content" id="resultContent">
+                <span class="placeholder">请依次选择各层级，查看结果</span>
+            </div>
+        </div>
+
+        <!-- 树形数据 (JavaScript) -->
+        <script>
+            // --------------------------------------------------------------
+            // 1. 数据定义 —— 基于思维导图「人际交往」结构
+            //    树形结构：每个节点 { id, label, children? , description? }
+            //    叶子节点必须包含 description
+            // --------------------------------------------------------------
+            const treeData = {
+                id: 'root',
+                label: '人际交往',
+                children: [{
+                    id: 'relation',
+                    label: '关系',
+                    children: [{
+                        id: 'family',
+                        label: '家庭关系',
+                        children: [{
+                            id: 'father_son',
+                            label: '父子关系',
+                            description: '父子之间基于血缘与责任的纵向纽带，承载着传承、教育与情感支撑。'
+                        }, {
+                            id: 'husband_wife',
+                            label: '夫妻关系',
+                            description: '以爱情与契约为基础的生命共同体，需要理解、包容与共同成长。'
+                        }, {
+                            id: 'siblings',
+                            label: '兄弟姐妹',
+                            description: '同根生长的伙伴，既有童年的陪伴，也有成年后的彼此扶持与守望。'
+                        }, {
+                            id: 'mother_in_law',
+                            label: '婆媳关系',
+                            description: '两个家庭文化的交汇点，需要边界感、尊重与换位思考的智慧。'
+                        }, {
+                            id: 'grandparent',
+                            label: '祖孙关系',
+                            description: '隔代亲情，既是爱的传递，也是家庭记忆与智慧的延续。'
+                        }]
+                    }, {
+                        id: 'friend',
+                        label: '朋友关系',
+                        children: [{
+                            id: 'close_friend',
+                            label: '挚友',
+                            description: '可以托付信任的少数人，彼此了解、支持，经得起时间考验。'
+                        }, {
+                            id: 'confidant',
+                            label: '知己',
+                            description: '灵魂深处的共鸣者，无需多言便能理解彼此的心境与选择。'
+                        }, {
+                            id: 'casual_friend',
+                            label: '普通朋友',
+                            description: '日常交往中的陪伴者，一起分享快乐，分担简单的烦恼。'
+                        }, {
+                            id: 'online_friend',
+                            label: '网友',
+                            description: '数字世界里的连接，因兴趣而相遇，也可成为现实中的温暖。'
+                        }]
+                    }, {
+                        id: 'classmate',
+                        label: '同学关系',
+                        children: [{
+                            id: 'same_class',
+                            label: '同窗',
+                            description: '在同一间教室里度过青春岁月，是成长路上最纯粹的同行者。'
+                        }, {
+                            id: 'alumni',
+                            label: '校友',
+                            description: '共同的母校记忆，毕业后依然能因共同话题而重新连接。'
+                        }, {
+                            id: 'deskmate',
+                            label: '同桌',
+                            description: '距离最近的伙伴，一起听课、传纸条，藏着许多小秘密。'
+                        }]
+                    }, {
+                        id: 'colleague',
+                        label: '同事关系',
+                        children: [{
+                            id: 'work_together',
+                            label: '共事',
+                            description: '为共同目标而协作，专业与信任是合作的基础。'
+                        }, {
+                            id: 'partner',
+                            label: '搭档',
+                            description: '默契配合的二人组，互补长短，能完成单个人做不到的事。'
+                        }, {
+                            id: 'subordinate',
+                            label: '上下级',
+                            description: '建立在职权与责任之上的关系，需要清晰沟通与互相尊重。'
+                        }]
+                    }, {
+                        id: 'leader',
+                        label: '领导关系',
+                        children: [{
+                            id: 'leader_sub',
+                            label: '上下级',
+                            description: '领导与下属之间的互动，核心是信任、授权与共同目标。'
+                        }, {
+                            id: 'mentor',
+                            label: '导师',
+                            description: '亦师亦友的引路人，在职业与人生方向上给予指引和启发。'
+                        }]
+                    }]
+                }, {
+                    id: 'phenomenon',
+                    label: '现象',
+                    children: [{
+                        id: 'communicate',
+                        label: '沟通',
+                        children: [{
+                            id: 'verbal',
+                            label: '语言沟通',
+                            description: '通过口头语言传递信息，是日常交往中最基础的方式。'
+                        }, {
+                            id: 'nonverbal',
+                            label: '非语言沟通',
+                            description: '表情、手势、姿态等无声信号，往往比语言更真实。'
+                        }, {
+                            id: 'written',
+                            label: '书面沟通',
+                            description: '以文字为载体，正式且可追溯，适合复杂信息的传递。'
+                        }]
+                    }, {
+                        id: 'conflict',
+                        label: '矛盾',
+                        children: [{
+                            id: 'viewpoint',
+                            label: '观点不合',
+                            description: '因认知、立场或价值观不同而产生的分歧，需要理性对话。'
+                        }, {
+                            id: 'interest',
+                            label: '利益冲突',
+                            description: '资源或利益分配不均引发的紧张，需要公平与协商。'
+                        }, {
+                            id: 'misunderstanding',
+                            label: '误会',
+                            description: '信息不对称或表达不清导致的隔阂，及时澄清可以化解。'
+                        }]
+                    }, {
+                        id: 'mutual_help',
+                        label: '互助',
+                        children: [{
+                            id: 'help',
+                            label: '帮助',
+                            description: '在他人需要时伸出援手，是建立信任和友谊的重要途径。'
+                        }, {
+                            id: 'support',
+                            label: '支持',
+                            description: '在精神或行动上给予鼓励，让人感到被理解与陪伴。'
+                        }, {
+                            id: 'collaborate',
+                            label: '合作',
+                            description: '为了共同目标而协同努力，实现个人无法达到的成果。'
+                        }]
+                    }, {
+                        id: 'competition',
+                        label: '竞争',
+                        children: [{
+                            id: 'healthy',
+                            label: '良性竞争',
+                            description: '以公平、积极的方式激发潜力，促进共同进步与成长。'
+                        }, {
+                            id: 'unhealthy',
+                            label: '恶性竞争',
+                            description: '以损人利己为手段，破坏信任，最终伤害所有参与者。'
+                        }]
+                    }, {
+                        id: 'cooperation',
+                        label: '合作',
+                        children: [{
+                            id: 'teamwork',
+                            label: '团队合作',
+                            description: '多角色协同，发挥各自优势，实现整体大于部分之和。'
+                        }, {
+                            id: 'cross_dept',
+                            label: '跨部门合作',
+                            description: '打破部门壁垒，整合资源，是组织创新与效率的关键。'
+                        }]
+                    }]
+                }]
+            };
+
+            // --------------------------------------------------------------
+            // 2. 工具函数：从树中获取某节点的所有子节点（用于填充下拉框）
+            // --------------------------------------------------------------
+            function findNodeById(root, targetId) {
+                if (root.id === targetId) return root;
+                if (root.children) {
+                    for (let child of root.children) {
+                        const found = findNodeById(child, targetId);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            }
+
+            function getChildrenOptions(nodeId) {
+                const node = findNodeById(treeData, nodeId);
+                if (!node || !node.children) return [];
+                return node.children.map(child => ({
+                    id: child.id,
+                    label: child.label,
+                    hasChildren: child.children && child.children.length > 0,
+                    description: child.description || null
+                }));
+            }
+
+            // 获取叶子节点的描述
+            function getLeafDescription(nodeId) {
+                const node = findNodeById(treeData, nodeId);
+                if (node && node.description) return node.description;
+                return null;
+            }
+
+            // 获取从根到某节点的路径（用于面包屑）
+            function getPathToNode(root, targetId, path = []) {
+                if (root.id === targetId) {
+                    path.push(root.label);
+                    return path;
+                }
+                if (root.children) {
+                    for (let child of root.children) {
+                        const result = getPathToNode(child, targetId, [...path, root.label]);
+                        if (result) return result;
+                    }
+                }
+                return null;
+            }
+
+            // 获取从根到某节点的节点ID路径
+            function getIdPathToNode(root, targetId, path = []) {
+                if (root.id === targetId) {
+                    path.push(root.id);
+                    return path;
+                }
+                if (root.children) {
+                    for (let child of root.children) {
+                        const result = getIdPathToNode(child, targetId, [...path, root.id]);
+                        if (result) return result;
+                    }
+                }
+                return null;
+            }
+
+            // --------------------------------------------------------------
+            // 3. DOM 引用
+            // --------------------------------------------------------------
+            const selL2 = document.getElementById('selLevel2');
+            const selL3 = document.getElementById('selLevel3');
+            const selL4 = document.getElementById('selLevel4');
+            const selL5 = document.getElementById('selLevel5');
+            const resetBtn = document.getElementById('resetBtn');
+            const breadcrumb = document.getElementById('breadcrumb');
+            const resultContent = document.getElementById('resultContent');
+
+            // --------------------------------------------------------------
+            // 4. 核心逻辑：更新下拉框
+            // --------------------------------------------------------------
+            // 存储当前选中的各层级ID (用于重置时恢复)
+            let selectedIds = {
+                l1: 'root',
+                l2: '',
+                l3: '',
+                l4: '',
+                l5: ''
+            };
+
+            // 清空并填充下拉框
+            function populateSelect(selectEl, options, placeholderText, disabled) {
+                selectEl.innerHTML = '';
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = placeholderText || '— 请选择 —';
+                selectEl.appendChild(opt);
+
+                if (disabled) {
+                    selectEl.disabled = true;
+                    return;
+                }
+
+                options.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = item.label;
+                    option.dataset.hasChildren = item.hasChildren ? 'true' : 'false';
+                    option.dataset.description = item.description || '';
+                    selectEl.appendChild(option);
+                });
+
+                selectEl.disabled = false;
+            }
+
+            // 更新所有层级（级联）
+            function updateCascade() {
+                const l2Val = selL2.value;
+                const l3Val = selL3.value;
+                const l4Val = selL4.value;
+                const l5Val = selL5.value;
+
+                // 更新层级2 (固定从根节点取)
+                const l2Options = getChildrenOptions('root');
+                populateSelect(selL2, l2Options, '— 请选择 —', false);
+                // 恢复之前选中的值 (如果存在)
+                if (selectedIds.l2 && l2Options.some(o => o.id === selectedIds.l2)) {
+                    selL2.value = selectedIds.l2;
+                } else {
+                    selL2.value = '';
+                }
+
+                // 根据层级2的值更新层级3
+                const currentL2 = selL2.value;
+                if (currentL2) {
+                    const l3Options = getChildrenOptions(currentL2);
+                    populateSelect(selL3, l3Options, '— 请选择 —', false);
+                    if (selectedIds.l3 && l3Options.some(o => o.id === selectedIds.l3)) {
+                        selL3.value = selectedIds.l3;
+                    } else {
+                        selL3.value = '';
+                    }
+                } else {
+                    populateSelect(selL3, [], '— 请先选上层 —', true);
+                    selL3.value = '';
+                }
+
+                // 根据层级3的值更新层级4
+                const currentL3 = selL3.value;
+                if (currentL3) {
+                    const l4Options = getChildrenOptions(currentL3);
+                    populateSelect(selL4, l4Options, '— 请选择 —', false);
+                    if (selectedIds.l4 && l4Options.some(o => o.id === selectedIds.l4)) {
+                        selL4.value = selectedIds.l4;
+                    } else {
+                        selL4.value = '';
+                    }
+                } else {
+                    populateSelect(selL4, [], '— 请先选上层 —', true);
+                    selL4.value = '';
+                }
+
+                // 根据层级4的值更新层级5
+                const currentL4 = selL4.value;
+                if (currentL4) {
+                    const l5Options = getChildrenOptions(currentL4);
+                    populateSelect(selL5, l5Options, '— 请选择 —', false);
+                    if (selectedIds.l5 && l5Options.some(o => o.id === selectedIds.l5)) {
+                        selL5.value = selectedIds.l5;
+                    } else {
+                        selL5.value = '';
+                    }
+                } else {
+                    populateSelect(selL5, [], '— 请先选上层 —', true);
+                    selL5.value = '';
+                }
+
+                // 更新结果展示
+                updateResult();
+
+                // 保存当前选中的值
+                selectedIds.l2 = selL2.value;
+                selectedIds.l3 = selL3.value;
+                selectedIds.l4 = selL4.value;
+                selectedIds.l5 = selL5.value;
+            }
+
+            // 更新结果区域 + 面包屑
+            function updateResult() {
+                const l5Val = selL5.value;
+                const l4Val = selL4.value;
+                const l3Val = selL3.value;
+                const l2Val = selL2.value;
+
+                // 构建路径
+                const pathLabels = ['人际交往'];
+                const pathIds = ['root'];
+
+                if (l2Val) {
+                    const node2 = findNodeById(treeData, l2Val);
+                    if (node2) { pathLabels.push(node2.label);
+                        pathIds.push(node2.id); }
+                }
+                if (l3Val) {
+                    const node3 = findNodeById(treeData, l3Val);
+                    if (node3) { pathLabels.push(node3.label);
+                        pathIds.push(node3.id); }
+                }
+                if (l4Val) {
+                    const node4 = findNodeById(treeData, l4Val);
+                    if (node4) { pathLabels.push(node4.label);
+                        pathIds.push(node4.id); }
+                }
+                if (l5Val) {
+                    const node5 = findNodeById(treeData, l5Val);
+                    if (node5) { pathLabels.push(node5.label);
+                        pathIds.push(node5.id); }
+                }
+
+                // 渲染面包屑
+                let breadHTML = '';
+                pathLabels.forEach((label, idx) => {
+                    if (idx > 0) {
+                        breadHTML += `<span class="sep">▸</span>`;
+                    }
+                    breadHTML += `<span>${label}</span>`;
+                });
+                breadcrumb.innerHTML = breadHTML;
+
+                // 获取描述：优先从层级5取，如果没有则从层级4取，以此类推
+                let description = null;
+                let foundNodeId = null;
+
+                if (l5Val) {
+                    description = getLeafDescription(l5Val);
+                    foundNodeId = l5Val;
+                } else if (l4Val) {
+                    const node = findNodeById(treeData, l4Val);
+                    if (node && node.description) {
+                        description = node.description;
+                        foundNodeId = l4Val;
+                    }
+                } else if (l3Val) {
+                    const node = findNodeById(treeData, l3Val);
+                    if (node && node.description) {
+                        description = node.description;
+                        foundNodeId = l3Val;
+                    }
+                } else if (l2Val) {
+                    const node = findNodeById(treeData, l2Val);
+                    if (node && node.description) {
+                        description = node.description;
+                        foundNodeId = l2Val;
+                    }
+                }
+
+                if (description) {
+                    resultContent.innerHTML = description;
+                } else {
+                    // 如果当前层级没有描述，显示提示
+                    const currentSelection = l5Val || l4Val || l3Val || l2Val;
+                    if (currentSelection) {
+                        resultContent.innerHTML = '<span class="placeholder">📖 当前选项暂无详细描述，请继续向下选择。</span>';
+                    } else {
+                        resultContent.innerHTML = '<span class="placeholder">请依次选择各层级，查看结果</span>';
+                    }
+                }
+            }
+
+            // 重置所有选择
+            function resetAll() {
+                selectedIds = { l1: 'root', l2: '', l3: '', l4: '', l5: '' };
+                // 强制刷新
+                updateCascade();
+                // 额外清除结果
+                resultContent.innerHTML = '<span class="placeholder">已重置，请依次选择各层级</span>';
+                breadcrumb.innerHTML = '<span>人际交往</span>';
+            }
+
+            // --------------------------------------------------------------
+            // 5. 事件绑定
+            // --------------------------------------------------------------
+            selL2.addEventListener('change', function() {
+                selectedIds.l2 = this.value;
+                selectedIds.l3 = '';
+                selectedIds.l4 = '';
+                selectedIds.l5 = '';
+                updateCascade();
+            });
+
+            selL3.addEventListener('change', function() {
+                selectedIds.l3 = this.value;
+                selectedIds.l4 = '';
+                selectedIds.l5 = '';
+                updateCascade();
+            });
+
+            selL4.addEventListener('change', function() {
+                selectedIds.l4 = this.value;
+                selectedIds.l5 = '';
+                updateCascade();
+            });
+
+            selL5.addEventListener('change', function() {
+                selectedIds.l5 = this.value;
+                updateResult();
+            });
+
+            resetBtn.addEventListener('click', resetAll);
+
+            // --------------------------------------------------------------
+            // 6. 初始化
+            // --------------------------------------------------------------
+            // 层级1固定
+            // 层级2初始加载
+            const initL2Options = getChildrenOptions('root');
+            populateSelect(selL2, initL2Options, '— 请选择 —', false);
+            selL2.value = '';
+            // 层级3、4、5 初始禁用
+            populateSelect(selL3, [], '— 请先选上层 —', true);
+            populateSelect(selL4, [], '— 请先选上层 —', true);
+            populateSelect(selL5, [], '— 请先选上层 —', true);
+
+            // 初始结果
+            resultContent.innerHTML = '<span class="placeholder">请依次选择各层级，查看结果</span>';
+            breadcrumb.innerHTML = '<span>人际交往</span>';
+
+            console.log('✅ 人际交往 · 级联选择器已加载');
+            console.log('📁 数据树根节点：', treeData);
+        </script>
+    </div>
+
+</body>
+</html>

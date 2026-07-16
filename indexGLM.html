@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八字婚姻解析系统</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+:root{--bg:#0c0a08;--bg2:#161310;--card:#1e1b17;--card-h:#272320;--acc:#c9a55a;--acc-d:#8a7039;--acc-g:rgba(201,165,90,.12);--tx:#e8e0d4;--tx2:#b0a898;--tx3:#706858;--bd:#2d2926;--bd2:#3a3530;--res-bg:#1a1814;--danger:#d45454;--ok:#5ab87a}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Serif SC',serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+canvas#bgc{position:fixed;inset:0;z-index:0;pointer-events:none}
+.bg-g{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 60% 40% at 20% 20%,rgba(201,165,90,.04),transparent),radial-gradient(ellipse 50% 50% at 80% 80%,rgba(201,165,90,.03),transparent)}
+header{position:sticky;top:0;z-index:100;background:rgba(12,10,8,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-ic{width:36px;height:36px;border:2px solid var(--acc);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--acc);font-size:15px}
+.logo h1{font-size:19px;font-weight:700;letter-spacing:2px}
+.logo h1 span{color:var(--acc)}
+.hr{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gl{font-size:12px;color:var(--tx3);margin-right:2px}
+.gb{padding:5px 18px;border:1px solid var(--bd);border-radius:6px;background:0 0;color:var(--tx3);font-family:inherit;font-size:14px;cursor:pointer;transition:.3s}
+.gb:hover{border-color:var(--acc-d);color:var(--tx2)}
+.gb.on{background:var(--acc);border-color:var(--acc);color:#0c0a08;font-weight:600;box-shadow:0 0 20px rgba(201,165,90,.2)}
+.sb{padding:5px 14px;border:1px solid var(--acc-d);border-radius:6px;background:0 0;color:var(--acc);font-family:inherit;font-size:12px;cursor:pointer;transition:.3s;display:flex;align-items:center;gap:5px}
+.sb:hover{background:var(--acc-g)}
+.badge{background:var(--acc);color:#0c0a08;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:16px;text-align:center}
+nav.tc{position:sticky;top:65px;z-index:90;background:rgba(12,10,8,.82);backdrop-filter:blur(14px);border-bottom:1px solid var(--bd);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+nav.tc::-webkit-scrollbar{display:none}
+.tabs{display:flex;padding:0 20px;min-width:max-content}
+.tb{padding:11px 14px;border:none;background:0 0;color:var(--tx3);font-family:inherit;font-size:13px;cursor:pointer;transition:.3s;white-space:nowrap;position:relative}
+.tb:hover{color:var(--tx2)}
+.tb.on{color:var(--acc)}
+.tb.on::after{content:'';position:absolute;bottom:0;left:14px;right:14px;height:2px;background:var(--acc);border-radius:1px}
+.tb .dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--acc);margin-left:5px;vertical-align:middle;opacity:0;transition:.3s}
+.tb.hr .dot{opacity:1}
+main{position:relative;z-index:1;max-width:700px;margin:0 auto;padding:28px 20px 100px}
+.bc{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-bottom:20px;font-size:12px}
+.bi{color:var(--tx3);cursor:pointer;transition:.2s;padding:2px 0}
+.bi:hover{color:var(--acc)}
+.bs{color:var(--bd2);font-size:9px}
+.bcur{color:var(--tx2);font-weight:600}
+.qc{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:24px;margin-bottom:16px;animation:fiu .4s ease}
+@keyframes fiu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.ql{font-size:10px;letter-spacing:2px;color:var(--acc-d);margin-bottom:8px;text-transform:uppercase}
+.qt{font-size:17px;font-weight:600;line-height:1.6}
+.og{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.ob{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--card);border:1px solid var(--bd);border-radius:10px;cursor:pointer;transition:.25s;text-align:left;font-family:inherit;color:var(--tx);font-size:14px;animation:fiu .4s ease both}
+.ob:nth-child(1){animation-delay:.04s}.ob:nth-child(2){animation-delay:.08s}.ob:nth-child(3){animation-delay:.12s}.ob:nth-child(4){animation-delay:.16s}.ob:nth-child(5){animation-delay:.2s}.ob:nth-child(6){animation-delay:.24s}.ob:nth-child(7){animation-delay:.28s}.ob:nth-child(8){animation-delay:.32s}.ob:nth-child(9){animation-delay:.36s}
+.ob:hover{background:var(--card-h);border-color:var(--acc-d);transform:translateX(3px)}
+.ob:active{transform:translateX(1px) scale(.998)}
+.oi{width:30px;height:30px;border-radius:7px;background:var(--acc-g);border:1px solid rgba(201,165,90,.18);display:flex;align-items:center;justify-content:center;color:var(--acc);font-size:12px;flex-shrink:0}
+.ot{flex:1;line-height:1.5}
+.oa{color:var(--tx3);font-size:11px;transition:.25s}
+.ob:hover .oa{color:var(--acc);transform:translateX(2px)}
+.nc{background:rgba(201,165,90,.05);border:1px solid rgba(201,165,90,.13);border-radius:10px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;animation:fiu .3s ease}
+.ni{color:var(--acc);font-size:13px;margin-top:2px;flex-shrink:0}
+.nt{font-size:13px;line-height:1.7;color:var(--tx2)}
+.rc{background:var(--res-bg);border-left:3px solid var(--acc);border-radius:0 10px 10px 0;padding:22px 24px;margin-bottom:20px;animation:fiu .5s ease}
+.rt{font-size:10px;letter-spacing:2px;color:var(--acc);font-weight:600;margin-bottom:10px;text-transform:uppercase}
+.rx{font-size:15px;line-height:1.85}
+.rs{margin-top:14px;padding-top:14px;border-top:1px solid var(--bd);font-size:13px;line-height:1.8;color:var(--tx2)}
+.rb{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border:1px solid var(--bd);border-radius:7px;background:0 0;color:var(--tx3);font-family:inherit;font-size:12px;cursor:pointer;transition:.25s;margin-right:8px;margin-bottom:8px}
+.rb:hover{border-color:var(--acc-d);color:var(--acc)}
+.rb.dg:hover{border-color:var(--danger);color:var(--danger)}
+.ig{display:grid;gap:10px}
+.ic{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:20px 22px;transition:.3s}
+.ic:hover{border-color:var(--bd2)}
+.it{font-size:14px;font-weight:600;color:var(--acc);margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.ib{font-size:13px;line-height:1.85;color:var(--tx2)}
+.gp{text-align:center;padding:70px 20px;animation:fiu .6s ease}
+.gpi{font-size:44px;color:var(--acc-d);margin-bottom:18px}
+.gp h2{font-size:20px;font-weight:700;margin-bottom:8px}
+.gp p{color:var(--tx3);font-size:13px}
+.mo{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
+.mo.open{display:flex}
+.ml{background:var(--bg2);border:1px solid var(--bd);border-radius:14px;width:100%;max-width:580px;max-height:80vh;overflow-y:auto;padding:24px;animation:mi .3s ease}
+@keyframes mi{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.mt{font-size:17px;font-weight:700}
+.mc{width:30px;height:30px;border:1px solid var(--bd);border-radius:7px;background:0 0;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.mc:hover{border-color:var(--danger);color:var(--danger)}
+.ss{margin-bottom:16px}
+.st{font-size:12px;color:var(--acc);font-weight:600;letter-spacing:1px;margin-bottom:6px}
+.sp{font-size:11px;color:var(--tx3);margin-bottom:5px}
+.sr{font-size:13px;line-height:1.7;padding:10px 14px;background:var(--card);border-radius:7px;border-left:2px solid var(--acc-d)}
+.se{text-align:center;color:var(--tx3);font-size:13px;padding:30px 0}
+.sec-title{font-size:15px;font-weight:700;color:var(--tx);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:8px}
+.sec-title i{color:var(--acc);font-size:13px}
+@media(max-width:640px){header{padding:10px 14px}.logo h1{font-size:15px}.tabs{padding:0 10px}.tb{padding:9px 10px;font-size:12px}main{padding:18px 14px 80px}.qc{padding:18px}.qt{font-size:15px}.ob{padding:12px 14px;font-size:13px}.rc{padding:16px 18px}.rx{font-size:14px}}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:0 0}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="bg-g"></div>
+<canvas id="bgc"></canvas>
+<header>
+  <div class="logo"><div class="logo-ic"><i class="fas fa-yin-yang"></i></div><h1>八字<span>婚姻</span>解析</h1></div>
+  <div class="hr">
+    <div class="gender-group"><span class="gl">性别</span><button class="gb" onclick="selG('女')">女</button><button class="gb" onclick="selG('男')">男</button></div>
+    <button class="sb" onclick="togSum()"><i class="fas fa-clipboard-list"></i>汇总<span class="badge" id="sBadge" style="display:none">0</span></button>
+  </div>
+</header>
+<nav class="tc" id="tc" style="display:none"><div class="tabs" id="tabs"></div></nav>
+<main id="mc"><div class="gp"><div class="gpi"><i class="fas fa-venus-mars"></i></div><h2>请先选择性别</h2><p>不同性别的夫妻星类型和分析角度有所不同</p></div></main>
+<div class="mo" id="sumM"><div class="ml"><div class="mh"><span class="mt">结果汇总</span><button class="mc" onclick="togSum()"><i class="fas fa-times"></i></button></div><div id="sumC"></div></div></div>
+<script>
+/* ========== 数据定义 ========== */
+const SEC=[
+  {k:'fqx',l:'夫妻星',ic:'fa-star'},
+  {k:'fqg',l:'夫妻宫',ic:'fa-home'},
+  {k:'gz',l:'宫坐十神',ic:'fa-couch'},
+  {k:'xg',l:'星宫互动',ic:'fa-exchange-alt'},
+  {k:'zg',l:'藏干十神',ic:'fa-eye'},
+  {k:'qj',l:'全局力量',ic:'fa-balance-scale'},
+  {k:'yd',l:'异地恋',ic:'fa-plane'},
+  {k:'ld',l:'恋爱短',ic:'fa-bolt'},
+  {k:'hy',l:'婚姻状态',ic:'fa-ring'},
+  {k:'yq',l:'结婚应期',ic:'fa-calendar-check'},
+  {k:'dy',l:'大运流年',ic:'fa-clock'}
+];
+
+/* 性别文本适配 */
+function at(t,g){if(g==='女')return t;
+return t.replace(/女方/g,'\x01').replace(/男方的?/g,'\x02')
+.replace(/\x01/g,'男方').replace(/\x02/g,'女方')
+.replace(/嫁了/g,'\x03').replace(/娶了/g,'\x04')
+.replace(/\x03/g,'娶了').replace(/\x04/g,'嫁了')
+.replace(/老公/g,'\x05').replace(/老婆/g,'\x06')
+.replace(/\x05/g,'老婆').replace(/\x06/g,'老公')
+.replace(/婆媳/g,'岳婿').replace(/丈夫/g,'\x07').replace(/妻子/g,'\x08')
+.replace(/\x07/g,'妻子').replace(/\x08/g,'丈夫')}
+
+/* 构建夫妻星树 */
+function bFQX(g){
+  const f=g==='女',z=f?'正官':'正财',p=f?'七杀':'偏财',h=f?'官杀混杂':'财星混杂',
+        j=f?'官杀为忌':'财星为忌',jr=f?'容易在多段感情中摇摆不定，或遇人不淑':'容易桃花泛滥或婚姻不顺';
+  function bS(s){return{question:`${s}的强弱如何？`,options:[
+    {label:`${s}旺`,question:`${s}是喜神还是忌神？`,options:[
+      {label:'喜神',result:'伴侣能力强，能帮到自己，婚姻幸福'},
+      {label:'忌神',result:'伴侣是来讨债的，给自己带来巨大压力'}]},
+    {label:`${s}弱`,question:`${s}是喜神还是忌神？`,options:[
+      {label:'喜神',result:'伴侣人很好，但能力有限，帮不上大忙'},
+      {label:'忌神',result:'伴侣想管你，但没那个实力，最后变成两人的心理暗战'}]},
+    {label:j,result:jr}]}}
+  return{question:'是否有夫妻星？',options:[
+    {label:'没有夫妻星',result:'缘分薄，或者对婚姻不感兴趣'},
+    {label:'有夫妻星',question:'夫妻星是什么类型？',options:[
+      {label:z,note:'正统、合法、持久的婚姻',...bS(z)},
+      {label:p,note:'激情、偏门、不稳定的缘分',...bS(p)},
+      {label:h,result:'容易多段感情，或者婚前有纠葛'}]}]}
+}
+
+/* 构建夫妻宫树 */
+function bFQG(){
+  return{question:'夫妻宫的状态如何？',options:[
+    {label:'夫妻宫为喜',result:'婚后的生活环境好，家里温馨，或者结婚能让你事业更上一层楼'},
+    {label:'夫妻宫为忌',result:'婚后觉得家是牢笼，或者家里容易出烦心事（比如婆媳不和、经济压力）'},
+    {label:'夫妻宫被冲',result:'极度不稳定。恋爱中必然伴随着频繁的剧烈争吵、突然的变故。如果冲力极大，往往表现为"物理上的强制分离"，比如一方突然被调职、出国、或者因为不可抗力被迫分手。这是异地恋最常见的标志性结构。'},
+    {label:'夫妻宫被合',question:'被什么合绊？',options:[
+      {label:'被年支合绊',result:'（长辈/原生家庭绊）：感情被父母、长辈、或者地域差异死死拴住。比如父母死活不同意，或者因为要回老家发展而被迫分开。'},
+      {label:'被月支合绊',result:'（事业/社交圈绊）：感情被工作、朋友圈子、或者某个特定的环境给缠住了。比如两人都是工作狂，感情被事业彻底挤占；或者被某个共同的朋友/合伙人搅局。'},
+      {label:'被时支合绊',result:'（子女/未来绊）：往往是因为意外怀孕、孩子的问题、或者对未来的某种不确定性，导致关系被"绑架"。'}]},
+    {label:'夫妻宫被刑',result:'不是轰轰烈烈的分手，而是长期的冷暴力、互相折磨、互相挑刺。最后往往是因为某件极其微小的事情，成为了压死骆驼的最后一根稻草，疲惫不堪地散场'},
+    {label:'夫妻宫被害',result:'婚姻里有说不清道不明的隔阂，彼此有防备心，容易因误会闹矛盾'}]}
+}
+
+/* 构建宫坐十神树 */
+function bGZ(){
+  const D={
+    '印星':{旺:['伴侣有较强的照顾能力，能在生活与精神层面给予支持，让您感到安稳、被包容。','伴侣关怀过甚，容易干涉个人空间，让您感到束缚或窒息，家庭氛围较为沉闷'],弱:['伴侣有照顾之心，但能力或资源有限，关心有时显得力不从心，更多停留在精神陪伴层面','伴侣习惯念叨或提建议，但威信不足，影响有限，主要表现是话语较多，实际约束力不强']},
+    '食伤':{旺:['伴侣风趣幽默，有一定才艺或见识，能带来生活情趣，在思想交流上较有共鸣。','伴侣言语较为犀利，习惯挑剔或反驳，相处中容易产生言语摩擦，情绪消耗较大。'],弱:['伴侣有浪漫想法，但实践能力偏弱，想法多落不到实处，生活中显得不够踏实。','伴侣偶尔会抱怨或抬杠，但底气不足，翻不起大浪，更多表现为发牢骚，不影响大局。']},
+    '比劫':{旺:['伴侣独立有主见，两人像搭档一样平等相处，遇事能共同承担，关系较为清爽','伴侣自我意识较强，凡事喜欢争高低，容易让您觉得家中缺乏温情，像在竞争而非过日子。'],弱:['伴侣与您性情相投，相处轻松愉快，但遇到现实难题时支撑力偏弱，适合玩伴而非战友','伴侣自尊心强但实力有限，遇事容易推卸责任或嘴硬，给人"心比天高"的无奈感。']},
+    '财星':{旺:['伴侣务实能干，有一定经济头脑或资源积累，能提供较为稳定的物质基础。','伴侣对金钱执念较重，显得精明甚至算计，容易因利益问题与您产生分歧，情感温度较低'],弱:['伴侣懂得量入为出，生活节俭，但赚钱能力一般，能满足温饱但难以支撑更高品质的生活。','伴侣经济能力不强但消费观念不匹配，或者对金钱斤斤计较，让您感到既憋屈又无解。']},
+    '官杀':{旺:['伴侣有担当，遇事能出面解决，能给您较强的安全感和依靠感，是家庭的主心骨。','伴侣控制欲较强，喜欢定规矩，容易让您感到被管束、被压制，家庭氛围较为紧张。'],弱:['伴侣有责任感，愿意为您遮风挡雨，但实际能力或资源有限，想帮却常常帮不上忙','伴侣习惯摆架子、充权威，但一遇真事就退缩，让您既不服他的做派，又看不上他的实际表现。']}
+  };
+  return{question:'夫妻宫坐着什么十神？',options:Object.keys(D).map(s=>({label:s,question:`${s}的强弱如何？`,options:[
+    {label:`${s}旺`,question:`${s}是喜神还是忌神？`,options:[
+      {label:'喜神',result:D[s].旺[0]},{label:'忌神',result:D[s].旺[1]}]},
+    {label:`${s}弱`,question:`${s}是喜神还是忌神？`,options:[
+      {label:'喜神',result:D[s].弱[0]},{label:'忌神',result:D[s].弱[1]}]}]}))}
+}
+
+/* 构建星宫互动树 */
+function bXG(g){
+  return{question:'夫妻星与夫妻宫是什么互动关系？',options:[
+    {label:'夫妻星生夫妻宫',question:'夫妻星是喜神还是忌神？',options:[
+      {label:'夫妻星为喜',question:'夫妻宫是喜神还是忌神？',options:[
+        {label:'夫妻宫为喜',result:'（好男人，进入好家庭）男方不仅优质，而且极其愿意付出，把所有的爱、资源、情绪价值都倾注在婚姻里。女方在婚姻里被滋养得越来越好。（大吉）',needAdapt:true},
+        {label:'夫妻宫为忌',result:'（好男人，进入了坏家庭）男方人很好，极度包容、极度付出。但女方本身性格有缺陷（比如极度作、抑郁、或者女方家庭是个无底洞）。男方的"好"不仅没治好婚姻的"病"，反而被吸干了，最后男方被拖垮、被逼疯。（男方大凶，女方未必觉得凶）',needAdapt:true}]},
+      {label:'夫妻星为忌',question:'夫妻宫是喜神还是忌神？',options:[
+        {label:'夫妻宫为喜',result:'（坏男人，进入好家庭）男方本质上自私、甚至有毒（忌神），但他极其擅长提供情绪价值，精准地击中了女方最渴望的软肋（喜神宫）。女方明知道是个坑，但像吸食毒品一样离不开，在虚假的滋润中走向毁灭。（大凶，精神奴役）',needAdapt:true},
+        {label:'夫妻宫为忌',result:'（坏男人，进入坏家庭）两个烂人在泥潭里互撕。男方带来负能量，女方本身也一地鸡毛，两人在在一起就是互相折磨、互相拖累，但谁也舍不得走。（大凶，底层互害）',needAdapt:true}]}]},
+    {label:'夫妻星克夫妻宫',question:'被什么合绊？',options:[
+      {label:'被年支合绊',result:'（长辈/原生家庭绊）：感情被父母、长辈、或者地域差异死死拴住。比如父母死活不同意，或者因为要回老家发展而被迫分开。'},
+      {label:'被月支合绊',result:'（事业/社交圈绊）：感情被工作、朋友圈子、或者某个特定的环境给缠住了。比如两人都是工作狂，感情被事业彻底挤占；或者被某个共同的朋友/合伙人搅局。'},
+      {label:'被时支合绊',result:'（子女/未来绊）：往往是因为意外怀孕、孩子的问题、或者对未来的某种不确定性，导致关系被"绑架"。'}]},
+    {label:'夫妻宫生夫妻星',question:'夫妻宫是喜神还是忌神？',options:[
+      {label:'夫妻宫为喜',question:'夫妻星是喜神还是忌神？',options:[
+        {label:'夫妻星为喜',result:'伴侣是个有担当的人，虽然有时管得严了点，但你心里踏实。这段婚姻稳得住。'},
+        {label:'夫妻星为忌',result:'好的伴侣强行替你收拾烂摊子，过程有点粗暴，但结果管用'}]},
+      {label:'夫妻宫为忌',question:'夫妻星是喜神还是忌神？',options:[
+        {label:'夫妻星为喜',result:'本来日子过得挺好，结果伴侣沾染恶习或脾气暴躁，硬生生把家拆散了'},
+        {label:'夫妻星为忌',result:'两个都有毛病，互不相让，天天掐架，谁也落不着好'}]}]},
+    {label:'夫妻宫克夫妻星',question:'夫妻宫是喜神还是忌神？',options:[
+      {label:'夫妻宫为喜',question:'夫妻星是喜神还是忌神？',options:[
+        {label:'夫妻星为喜',result:'强强联手，你给足后盾，男方也争气，你把他捧成了大佬，他是真感激你',needAdapt:true},
+        {label:'夫妻星为忌',result:'你越能干、越倒贴，男方越废柴、越得寸进尺，典型的把巨婴养大了',needAdapt:true}]},
+      {label:'夫妻宫为忌',question:'夫妻星是喜神还是忌神？',options:[
+        {label:'夫妻星为喜',result:'你脾气差或家里一团糟，但偏偏把所有资源和好脾气都给伴侣，硬把他逼成功了，他怕你又依赖你'},
+        {label:'夫妻星为忌',result:'你天天抱怨、作闹，硬生生把一个原本还行的伴侣，逼得暴躁或躺平了'}]}]},
+    {label:'夫妻星合夫妻宫',question:'夫妻星是喜神还是忌神？',options:[
+      {label:'夫妻星为喜',question:'夫妻宫是喜神还是忌神？',options:[
+        {label:'夫妻宫为喜',result:'伴侣是贵人，婚姻生活本身也让你感到舒心、有依靠。这种人结婚后事业会变顺，心态变稳，伴侣是自己的"福星"。',supplement:g==='女'?'伴侣脾气好、会来事，用聪明的规矩把本来就不错的老公管得服服帖帖，顺风顺水。':null},
+        {label:'夫妻宫为忌',result:'伴侣本身就是来消耗你的，婚姻环境也让你压抑、喘不过气。结婚后易破财、多病、心情抑郁。',supplement:g==='女'?'你明事理、兜得住底，硬是用你的好脾气和底线，死死压制住老公的烂毛病，很累但家没散。':null}]},
+      {label:'夫妻星为忌',question:'夫妻宫是喜神还是忌神？',options:[
+        {label:'夫妻宫为喜',result:'伴侣本人靠谱、有能力，但婚姻本身的环境（家庭、婆媳、经济）让你感到痛苦。比如你嫁了个好人，但婆媳关系把你快逼疯了；或者你娶了个贤惠老婆，但丈母娘天天上门闹。人的质量过关，但环境折磨人。',needAdapt:true,supplement:g==='女'?'你脾气太暴躁或控制欲太强，硬生生把一个原本有潜力、挺老实的好老公，给耗干了、逼抑郁了':null},
+        {label:'夫妻宫为忌',result:'伴侣本人不太靠谱，但婚姻本身的氛围或外界条件（如经济、家庭）给了你支撑。比如你老公脾气差，但他家里有钱，让你物质无忧；或者你老婆控制欲强，但她持家有方，让你事业无后顾之忧。环境兜住了人。',needAdapt:true,supplement:g==='女'?'你作他也烂，家里天天是高压管制和互相报复，看谁先被谁气出病来，纯粹的互害。':null}]}]}]}
+}
+
+/* 信息卡类节点 */
+function bZG(){return{type:'info',items:[
+  {t:'官杀',b:'把老公当"权威/保护伞"'},
+  {t:'财星',b:'把伴侣当"财神爷/现实依靠"'},
+  {t:'印星',b:'把伴侣当"妈/精神避风港"，容易产生依赖'},
+  {t:'比劫',b:'把伴侣当"哥们/竞争对手"，容易互怼'}]}}
+function bQJ(){return{type:'info',items:[
+  {t:'女弱男强',b:'你的心根本不在伴侣身上，你的注意力被工作（合化成官杀）、被朋友（合化成比劫）、或者被某种爱好完全吸走了。伴侣觉得你"人在心不在"，这种感情通常熬不过平淡期，很快就会因为"没感觉了"而和平分手。'}]}}
+function bYD(){return{type:'info',items:[
+  {t:'夫妻星离日主太远',b:'比如日主在日柱，夫妻星在年柱（祖辈/远方），或者时柱（晚辈/未来）。这在现实中经常表现为：网恋、异地恋、或者两人虽然在同一个城市，但生活方式、社交圈完全隔绝，像两个世界的人。'},
+  {t:'夫妻宫坐驿马星',b:'夫妻宫坐驿马星（寅、申、巳、亥）代表走动、迁移。如果夫妻宫坐驿马，或者夫妻星是驿马，又或者大运流年频繁引动驿马冲克夫妻宫。这类人哪怕结了婚，也像"单身贵族"。不是因为感情不好，而是因为工作性质（出差、驻外、军警等）或性格原因，必须保持物理距离。距离近了反而容易吵架，距离产生美才是他们的常态。'}]}}
+function bLD(){return{type:'info',items:[
+  {t:'夫星太弱，无根且受克',b:'恋爱对象往往来得快去得也快。可能刚认识时感觉很好，但一深入接触，发现对方根本没有担当，或者突然失联。这种通常谈的都是"短择"或者"烂桃花"。'},
+  {t:'伤官/食神过旺（挑剔狂）',b:'尤其是女命，伤官是专门克制丈夫（官杀）的。恋爱初期觉得对方完美，一旦确立关系，伤官的显微镜就开始工作，放大对方所有的缺点。"因滤镜碎裂而迅速下头"，是这类人恋爱不长久心理根源。'},
+  {t:'比劫旺透（自我中心）',b:'恋爱时只顾自己爽，不懂得妥协和提供情绪价值。一旦对方觉得"得不到滋养"而离开，他们甚至不知道为什么。'}]}}
+function bDY(){return{type:'info',items:[
+  {t:'夫妻宫被冲',b:'代表物理上的分离（分居、冷战、出差长期不见面）'},
+  {t:'夫妻宫被合走',b:'代表伴侣的心/精力被外面的人或事（如赌博、游戏、其他女人）完全吸走。'},
+  {t:'夫妻宫合绊',b:'代表冷战、互相消耗，内耗'},
+  {t:'夫妻宫被害',b:'代表伴侣的心/精力被外面的人或事情牵制'},
+  {t:'夫妻宫被刑',b:'代表冷战、互相消耗，内耗'}]}}
+
+/* 婚姻状态树 */
+function bHY(g){
+  function bSub(ctx){
+    return{question:`${ctx}状态下，关注以下哪些信号？`,options:[
+      {label:'夫妻星现身',result:`${ctx}时夫妻星在命局中清晰出现，代表有明确的缘分线索。`},
+      {label:'夫妻星被合出来',result:`${ctx}时夫妻星被其他天干合化出来，代表缘分被"唤醒"。`},
+      {label:'夫妻宫被冲',result:`${ctx}时夫妻宫被冲，代表感情不稳定，容易因外界变故而中断。`},
+      {label:'夫妻宫被合',result:`${ctx}时夫妻宫被合，代表有外力介入感情。`},
+      {label:'夫妻宫合绊',result:'感情被某种力量绊住，难以推进到下一阶段。'},
+      {label:'大运流年引动',result:'大运流年引动夫妻宫或夫妻星，代表这个阶段感情会有明显变化。'},
+      {label:'夫妻宫被害',result:'婚姻宫位受到暗害，代表感情中有隐患。'},
+      {label:'夫妻宫被刑',result:'夫妻宫被刑，代表感情中有摩擦和内耗。'},
+      {label:'夫妻星与夫妻宫互动',question:'是什么互动关系？',options:[
+        {label:'夫妻星生夫妻宫',result:'伴侣极其想娶你/嫁你，进度极快（可能闪婚）'},
+        {label:'夫妻星合夫妻宫',result:'伴侣极其想娶你/嫁你，进度极快（可能闪婚）'},
+        {label:'夫妻星克夫妻宫',result:'伴侣追你，但你家里强烈反对，或者你觉得这伴侣压迫感太强，谈得极其痛苦，落不了地。'},
+        {label:'夫妻星冲夫妻宫',result:'伴侣追你，但你家里强烈反对，或者你觉得这伴侣压迫感太强，谈得极其痛苦，落不了地。'}]}]}}
+  return{question:'当前的婚姻状态？',options:[
+    bSub('未婚'),bSub('已婚'),
+    {label:'离婚',question:'离婚后的关注点？',options:[
+      {label:'大运流年 — 夫妻宫为忌',question:'忌神的具体表现？',options:[
+        {label:'又来了忌神',result:'代表前夫又来纠缠，或者那种"窒息感、自我怀疑"的心理创伤再次复发',needAdapt:true},
+        {label:'克制了忌神',result:'代表她终于把过去那个软弱的自己杀死了，彻底走出来。',needAdapt:true}]},
+      {label:'财星的拉扯',result:'"比劫夺财"或"官杀混杂"代表为了财产分割、孩子抚养权，与前夫/前妻发生极其丑陋的撕逼。'}]}]}
+}
+
+/* 结婚应期树 */
+function bYQ(){return{question:'关注哪个结婚应期信号？',options:[
+  {label:'夫妻星到位',result:'当大运或流年引动夫妻星时，代表缘分的"时间窗口"打开了，是结婚的重要信号。'},
+  {label:'夫妻宫被引动',result:'当大运或流年直接引动夫妻宫（日支）时，代表婚姻宫被激活，容易有实质性进展。'},
+  {label:'大运流年补足喜用神力量',result:'当大运流年带来命局需要的喜用神时，整体运势提升，婚姻顺理成章。'},
+  {label:'神煞辅助',result:'流年带红鸾或天喜，会加大"想恋爱、想成家"的情绪波动，是辅助判断信号。'},
+  {label:'大运流年 — 夫妻星引动详情',question:'大运流年中夫妻宫受到什么影响？',options:[
+    {label:'夫妻宫被冲',result:'代表物理上的分离（分居、冷战、出差长期不见面）'},
+    {label:'夫妻宫被合走',result:'代表伴侣的心/精力被外面的人或事（如赌博、游戏、其他女人）完全吸走。'},
+    {label:'夫妻宫合绊',result:'代表冷战、互相消耗，内耗'},
+    {label:'夫妻宫被害',result:'代表伴侣的心/精力被外面的人或事情牵制'},
+    {label:'夫妻宫被刑',result:'代表冷战、互相消耗，内耗'}]}]}}
+
+/* 获取树 */
+function getTree(k,g){
+  switch(k){
+    case'fqx':return bFQX(g);case'fqg':return bFQG();case'gz':return bGZ();
+    case'xg':return bXG(g);case'zg':return bZG();case'qj':return bQJ();
+    case'yd':return bYD();case'ld':return bLD();case'hy':return bHY(g);
+    case'yq':return bYQ();case'dy':return bDY();
+  }
+}
+
+/* ========== 状态管理 ========== */
+const S={gender:null,cur:'fqx',paths:{},results:{}};
+
+/* ========== 渲染逻辑 ========== */
+function getLabels(tree,path){
+  const labels=[tree.question||''];
+  let n=tree;
+  for(const i of path){
+    const o=n.options[i];
+    labels.push(o.label);
+    if(o.question)n=o;else break;
+  }
+  return labels;
+}
+
+function render(){
+  if(!S.gender){document.getElementById('mc').innerHTML='<div class="gp"><div class="gpi"><i class="fas fa-venus-mars"></i></div><h2>请先选择性别</h2><p>不同性别的夫妻星类型和分析角度有所不同</p></div>';return;}
+  const tree=getTree(S.cur,S.gender);
+  const el=document.getElementById('mc');
+  // 信息卡类
+  if(tree.type==='info'){
+    let h=`<div class="sec-title"><i class="fas ${SEC.find(s=>s.k===S.cur).ic}"></i>${SEC.find(s=>s.k===S.cur).l}</div><div class="ig">`;
+    tree.items.forEach(it=>{h+=`<div class="ic"><div class="it"><i class="fas fa-diamond" style="font-size:8px"></i>${it.t}</div><div class="ib">${it.b}</div></div>`;});
+    el.innerHTML=h+'</div>';return;
+  }
+  const path=S.paths[S.cur]||[];
+  let n=tree,notes=[];
+  // 沿路径导航
+  for(let i=0;i<path.length;i++){
+    const o=n.options[path[i]];
+    if(o.note)notes.push(o.note);
+    if(o.question)n=o;
+    else{
+      // 终端节点 - 显示结果
+      let h=renderBC(getLabels(tree,path));
+      notes.forEach(nt=>{h+=`<div class="nc"><span class="ni"><i class="fas fa-bookmark"></i></span><span class="nt">${nt}</span></div>`;});
+      let rt=o.result;
+      if(o.needAdapt)rt=at(rt,S.gender);
+      h+=`<div class="rc"><div class="rt">解析结果</div><div class="rx">${rt}</div>`;
+      if(o.supplement)h+=`<div class="rs">${at(o.supplement,S.gender)}</div>`;
+      h+='</div>';
+      h+=`<button class="rb" onclick="goBack()"><i class="fas fa-arrow-left"></i> 返回上一步</button>`;
+      h+=`<button class="rb" onclick="resetSec()"><i class="fas fa-redo"></i> 继续探索其他分支</button>`;
+      el.innerHTML=h;return;
+    }
+  }
+  // 非终端 - 显示当前问题
+  let h=renderBC(getLabels(tree,path));
+  notes.forEach(nt=>{h+=`<div class="nc"><span class="ni"><i class="fas fa-bookmark"></i></span><span class="nt">${nt}</span></div>`;});
+  if(path.length>0)h+=`<button class="rb dg" onclick="goBack()" style="margin-bottom:12px"><i class="fas fa-arrow-left"></i> 返回上一步</button>`;
+  h+=`<div class="qc"><div class="ql">第 ${path.length+1} 步</div><div class="qt">${n.question}</div></div>`;
+  h+='<div class="og">';
+  const icons=['fa-circle-dot','fa-circle-dot','fa-circle-dot','fa-circle-dot','fa-circle-dot','fa-circle-dot','fa-circle-dot','fa-circle-dot','fa-circle-dot'];
+  n.options.forEach((o,i)=>{
+    h+=`<button class="ob" onclick="pick(${i})"><span class="oi"><i class="fas ${icons[i]||'fa-circle-dot'}"></i></span><span class="ot">${o.label}</span><span class="oa"><i class="fas fa-chevron-right"></i></span></button>`;
+  });
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+function renderBC(labels){
+  let h='<div class="bc">';
+  labels.forEach((l,i)=>{
+    if(i>0)h+='<span class="bs"><i class="fas fa-chevron-right"></i></span>';
+    if(i<labels.length-1){
+      // 可点击的面包屑 - 找到对应路径深度
+      h+=`<span class="bi" onclick="jumpTo(${i})">${l}</span>`;
+    }else{
+      h+=`<span class="bcur">${l}</span>`;
+    }
+  });
+  h+='</div>';return h;
+}
+
+/* ========== 交互逻辑 ========== */
+function selG(g){
+  S.gender=g;S.paths={};S.results={};
+  document.querySelectorAll('.gb').forEach(b=>{b.classList.toggle('on',b.textContent===g)});
+  document.getElementById('tc').style.display='';
+  buildTabs();switchTab(S.cur);updBadge();
+}
+
+function buildTabs(){
+  const c=document.getElementById('tabs');
+  c.innerHTML=SEC.map(s=>`<button class="tb${s.k===S.cur?' on':''}${(S.results[s.k]&&S.results[s.k].length)?' hr':''}" data-k="${s.k}" onclick="switchTab('${s.k}')">${s.l}<span class="dot"></span></button>`).join('');
+}
+
+function switchTab(k){
+  S.cur=k;
+  document.querySelectorAll('.tb').forEach(b=>{b.classList.toggle('on',b.dataset.k===k)});
+  render();
+}
+
+function pick(i){
+  const path=S.paths[S.cur]||[];
+  const tree=getTree(S.cur,S.gender);
+  let n=tree;
+  for(const idx of path){const o=n.options[idx];if(o.question)n=o;else break;}
+  const o=n.options[i];
+  const newPath=[...path,i];
+  // 检查是否终端
+  if(!o.question){
+    // 保存结果
+    const labels=getLabels(tree,newPath);
+    if(!S.results[S.cur])S.results[S.cur]=[];
+    let rt=o.result;if(o.needAdapt)rt=at(rt,S.gender);
+    S.results[S.cur].push({path:labels.join(' → '),result:rt,supplement:o.supplement?at(o.supplement,S.gender):null});
+    updBadge();updTabDots();
+  }
+  S.paths[S.cur]=newPath;
+  render();
+}
+
+function goBack(){
+  const path=S.paths[S.cur]||[];
+  if(path.length===0)return;
+  // 检查当前是否终端节点，如果是则移除结果
+  const tree=getTree(S.cur,S.gender);
+  let n=tree;
+  for(const idx of path){const o=n.options[idx];if(o.question)n=o;else break;}
+  const lastOpt=n.options[path[path.length-1]];
+  if(!lastOpt.question&&S.results[S.cur]&&S.results[S.cur].length){
+    S.results[S.cur].pop();updBadge();updTabDots();
+  }
+  path.pop();
+  S.paths[S.cur]=[...path];
+  render();
+}
+
+function jumpTo(depth){
+  const path=S.paths[S.cur]||[];
+  // 移除 depth 之后的所有结果
+  const tree=getTree(S.cur,S.gender);
+  // 重新计算：从 depth+1 到 path.length 之间是否有终端节点
+  let n=tree;
+  for(let i=0;i<path.length;i++){
+    const o=n.options[path[i]];
+    if(!o.question&&i>=depth+1&&S.results[S.cur]&&S.results[S.cur].length){
+      S.results[S.cur].pop();updBadge();updTabDots();
+    }
+    if(o.question)n=o;else break;
+  }
+  S.paths[S.cur]=path.slice(0,depth);
+  render();
+}
+
+function resetSec(){
+  S.paths[S.cur]=[];
+  render();
+}
+
+function updBadge(){
+  let c=0;for(const k in S.results)c+=S.results[k].length;
+  const b=document.getElementById('sBadge');
+  if(c>0){b.style.display='';b.textContent=c;}else{b.style.display='none';}
+}
+
+function updTabDots(){
+  document.querySelectorAll('.tb').forEach(b=>{
+    const k=b.dataset.k;
+    b.classList.toggle('hr',!!(S.results[k]&&S.results[k].length));
+  });
+}
+
+/* ========== 汇总弹窗 ========== */
+function togSum(){
+  const m=document.getElementById('sumM');
+  m.classList.toggle('open');
+  if(m.classList.contains('open'))renderSum();
+}
+document.getElementById('sumM').addEventListener('click',function(e){if(e.target===this)togSum()});
+
+function renderSum(){
+  const c=document.getElementById('sumC');
+  let total=0;for(const k in S.results)total+=S.results[k].length;
+  if(total===0){c.innerHTML='<div class="se">暂无结果，请先在各板块中完成选择</div>';return;}
+  let h='';
+  for(const k in S.results){
+    if(!S.results[k].length)continue;
+    const sec=SEC.find(s=>s.k===k);
+    h+=`<div class="ss"><div class="st">${sec?sec.l:k}</div>`;
+    S.results[k].forEach(r=>{
+      h+=`<div class="sp">${r.path}</div><div class="sr">${r.result}`;
+      if(r.supplement)h+=`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--bd);color:var(--tx2);font-size:12px">${r.supplement}</div>`;
+      h+='</div>';
+    });
+    h+='</div>';
+  }
+  c.innerHTML=h;
+}
+
+/* ========== 粒子背景 ========== */
+  const cv=document.getElementById('bgc'),cx=cv.getContext('2d');
+  let w,h,pts=[];
+  function resize(){w=cv.width=innerWidth;h=cv.height=innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  for(let i=0;i<40;i++)pts.push({x:Math.random()*2000,y:Math.random()*2000,r:Math.random()*1.5+.5,vx:(Math.random()-.5)*.15,vy:(Math.random()-.5)*.15,a:Math.random()*.3+.1});
+  function draw(){
+    cx.clearRect(0,0,w,h);
+    for(const p of pts){
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=w;if(p.x>w)p.x=0;if(p.y<0)p.y=h;if(p.y>h)p.y=0;
+      cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      cx.fillStyle=`rgba(201,165,90,${p.a})`;cx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches)draw();
+})();
+</script>
+</body>
+</html>

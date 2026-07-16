@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>夫妻星婚姻分析</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+.container { max-width: 760px; margin: 0 auto; padding: 20px 16px 40px; }
+.page { display: none; background: #fff; border-radius: 10px; padding: 28px 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); min-height: 500px; }
+.page.active { display: block; }
+.page-title { font-size: 20px; font-weight: bold; text-align: center; margin-bottom: 4px; color: #1a1a1a; }
+.page-desc { text-align: center; color: #999; margin-bottom: 22px; font-size: 13px; }
+.section-label { font-size: 13px; font-weight: 600; color: #888; margin: 14px 0 6px; padding-left: 10px; border-left: 3px solid #bbb; letter-spacing: 1px; }
+.option-item { display: block; padding: 11px 14px; margin: 5px 0; border: 1.5px solid #e0e0e0; border-radius: 6px; cursor: pointer; transition: all 0.15s; font-size: 13.5px; line-height: 1.6; color: #333; user-select: none; }
+.option-item:hover { border-color: #4a90d9; background: #f0f7ff; }
+.option-item.selected { border-color: #4a90d9; background: #e8f0fe; color: #1a73e8; font-weight: 600; }
+.option-item.multi { padding-left: 38px; position: relative; }
+.option-item.multi::before { content: ''; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; border: 1.5px solid #ccc; border-radius: 3px; transition: all 0.15s; }
+.option-item.multi.selected::before { background: #4a90d9; border-color: #4a90d9; }
+.option-item.multi.selected::after { content: '\2713'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #fff; font-size: 12px; font-weight: bold; }
+.result-box { background: #f8f9fa; border-left: 3px solid #4a90d9; padding: 14px 16px; margin-top: 16px; border-radius: 0 6px 6px 0; display: none; }
+.result-box .result-title { font-weight: 600; color: #1a73e8; margin-bottom: 6px; font-size: 14px; }
+.result-box .result-content { color: #444; line-height: 1.8; font-size: 13px; white-space: pre-line; }
+.btn-group { display: flex; justify-content: space-between; margin-top: 24px; }
+.btn { padding: 9px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.15s; }
+.btn-prev { background: #e8e8e8; color: #555; }
+.btn-prev:hover { background: #d8d8d8; }
+.btn-next { background: #4a90d9; color: #fff; }
+.btn-next:hover { background: #3a7bc8; }
+.btn-summary { background: #e74c3c; color: #fff; }
+.btn-summary:hover { background: #c0392b; }
+.progress-bar { width: 100%; height: 4px; background: #e0e0e0; border-radius: 2px; margin-bottom: 6px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #4a90d9, #357abd); border-radius: 2px; transition: width 0.3s; }
+.progress-text { text-align: center; color: #bbb; font-size: 12px; margin-bottom: 18px; }
+
+/* Summary Page Styles */
+.summary-page { display: none; background: #fff; border-radius: 10px; padding: 32px 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.summary-page.active { display: block; }
+.summary-title { font-size: 22px; font-weight: bold; text-align: center; color: #1a1a1a; margin-bottom: 8px; }
+.summary-subtitle { text-align: center; color: #999; font-size: 13px; margin-bottom: 28px; }
+.summary-card { background: #f8f9fa; border-radius: 8px; padding: 18px 20px; margin-bottom: 16px; border-left: 4px solid #4a90d9; }
+.summary-card-label { font-size: 12px; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.summary-card-value { font-size: 16px; font-weight: 700; color: #1a73e8; margin-bottom: 8px; }
+.summary-card-result { font-size: 13px; color: #555; line-height: 1.8; white-space: pre-line; padding: 10px 14px; background: #fff; border-radius: 6px; border: 1px solid #eee; }
+.summary-marital-section { background: #fff5f5; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #e74c3c; }
+.summary-marital-title { font-size: 15px; font-weight: 700; color: #c0392b; margin-bottom: 12px; }
+.summary-marital-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.summary-marital-item { background: #fff; border-radius: 6px; padding: 10px 12px; border: 1px solid #f0d0d0; }
+.summary-marital-item-label { font-size: 11px; color: #bbb; font-weight: 600; margin-bottom: 2px; }
+.summary-marital-item-value { font-size: 13px; color: #333; font-weight: 600; }
+.summary-marital-item-desc { font-size: 12px; color: #777; margin-top: 4px; line-height: 1.6; white-space: pre-line; }
+.restart-btn { display: block; margin: 28px auto 0; padding: 11px 36px; background: #4a90d9; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
+.restart-btn:hover { background: #3a7bc8; }
+.divider { height: 1px; background: #f0f0f0; margin: 12px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-text" id="progressText"></div>
+
+  <!-- Page 0: 性别 -->
+  <div class="page active" id="page0">
+    <div class="page-title">性别</div>
+    <div class="page-desc">请选择您的性别</div>
+    <div class="option-group">
+      <div class="option-item" data-value="男" onclick="selectSingle(this,0)">男</div>
+      <div class="option-item" data-value="女" onclick="selectSingle(this,0)">女</div>
+    </div>
+    <div class="btn-group"><div></div><button class="btn btn-next" onclick="goNext(0)">下一步</button></div>
+  </div>
+
+  <!-- Page 1: 有无夫妻星 -->
+  <div class="page" id="page1">
+    <div class="page-title">有无夫妻星</div>
+    <div class="page-desc">请选择您的夫妻星情况</div>
+    <div class="option-group">
+      <div class="option-item" data-value="没有夫妻星" onclick="selectSingle(this,1)">没有夫妻星</div>
+      <div class="option-item" data-value="有夫妻星" onclick="selectSingle(this,1)">有夫妻星</div>
+    </div>
+    <div class="result-box" id="result1">
+      <div class="result-title">结果</div>
+      <div class="result-content" id="resultContent1"></div>
+    </div>
+    <div class="btn-group"><button class="btn btn-prev" onclick="goPrev(1)">上一步</button><button class="btn btn-next" onclick="goNext(1)">下一步</button></div>
+  </div>
+
+  <!-- Page 2: 夫妻星的强弱 -->
+  <div class="page" id="page2">
+    <div class="page-title">夫妻星的强弱</div>
+    <div class="page-desc">请选择夫妻星的强弱及喜忌</div>
+    <div class="option-group">
+      <div class="option-item" data-value="夫妻星强-喜神" onclick="selectSingle(this,2)">夫妻星强 — 喜神</div>
+      <div class="option-item" data-value="夫妻星强-忌神" onclick="selectSingle(this,2)">夫妻星强 — 忌神</div>
+      <div class="option-item" data-value="夫妻星弱-喜神" onclick="selectSingle(this,2)">夫妻星弱 — 喜神</div>
+      <div class="option-item" data-value="夫妻星弱-忌神" onclick="selectSingle(this,2)">夫妻星弱 — 忌神</div>
+    </div>
+    <div class="result-box" id="result2">
+      <div class="result-title">结果</div>
+      <div class="result-content" id="resultContent2"></div>
+    </div>
+    <div class="btn-group"><button class="btn btn-prev" onclick="goPrev(2)">上一步</button><button class="btn btn-next" onclick="goNext(2)">下一步</button></div>
+  </div>
+
+  <!-- Page 3: 夫妻星的位置 -->
+  <div class="page" id="page3">
+    <div class="page-title">夫妻星的位置</div>
+    <div class="page-desc">请选择夫妻星所在的位置</div>
+    <div class="option-group">
+      <div class="option-item" data-value="夫妻星在年干" onclick="selectSingle(this,3)">夫妻星在年干</div>
+      <div class="option-item" data-value="夫妻星在年支" onclick="selectSingle(this,3)">夫妻星在年支</div>
+      <div class="option-item" data-value="夫妻星在月干" onclick="selectSingle(this,3)">夫妻星在月干</div>
+      <div class="option-item" data-value="夫妻星在月支" onclick="selectSingle(this,3)">夫妻星在月支</div>
+      <div class="option-item" data-value="夫妻星在日支" onclick="selectSingle(this,3)">夫妻星在日支</div>
+      <div class="option-item" data-value="夫妻星在时干" onclick="selectSingle(this,3)">夫妻星在时干</div>
+      <div class="option-item" data-value="夫妻星在时支" onclick="selectSingle(this,3)">夫妻星在时支</div>
+      <div class="option-item" data-value="夫妻星不显" onclick="selectSingle(this,3)">夫妻星不显</div>
+      <div class="option-item" data-value="夫妻星与日主相合/相克" onclick="selectSingle(this,3)">夫妻星与日主相合/相克</div>
+    </div>
+    <div class="result-box" id="result3">
+      <div class="result-title">结果</div>
+      <div class="result-content" id="resultContent3"></div>
+    </div>
+    <div class="btn-group"><button class="btn btn-prev" onclick="goPrev(3)">上一步</button><button class="btn btn-next" onclick="goNext(3)">下一步</button></div>
+  </div>
+
+  <!-- Page 4: 夫妻宫的喜忌 -->
+  <div class="page" id="page4">
+    <div class="page-title">夫妻宫的喜忌</div>
+    <div class="page-desc">请选择夫妻宫的喜忌情况</div>
+    <div class="option-group">
+      <div class="option-item" data-value="夫妻宫为喜" onclick="selectSingle(this,4)">夫妻宫为喜</div>
+      <div class="option-item" data-value="夫妻宫为忌" onclick="selectSingle(this,4)">夫妻宫为忌</div>
+    </div>
+    <div class="result-box" id="result4">
+      <div class="result-title">结果</div>
+      <div class="result-content" id="resultContent4"></div>
+    </div>
+    <div class="btn-group"><button class="btn btn-prev" onclick="goPrev(4)">上一步</button><button class="btn btn-next" onclick="goNext(4)">下一步</button></div>
+  </div>
+
+  <!-- Page 5: 夫妻宫是否被引动 -->
+  <div class="page" id="page5">
+    <div class="page-title">夫妻宫是否被引动</div>
+    <div class="page-desc">请选择夫妻宫的状态</div>
+    <div class="option-group">
+      <div class="option-item" data-value="夫妻宫被冲" onclick="selectSingle(this,5)">夫妻宫被冲</div>
+      <div class="option-item" data-value="夫妻宫被害" onclick="selectSingle(this,5)">夫妻宫被害</div>
+      <div class="option-item" data-value="夫妻宫被刑" onclick="selectSingle(this,5)">夫妻宫被刑</div>
+      <div class="option-item" data-value="夫妻宫被合" onclick="selectSingle(this,5)">夫妻宫被合</div>
+      <div class="option-item" data-value="被年支合绊" onclick="selectSingle(this,5)">被年支合绊（长辈/原生家庭绊）</div>
+      <div class="option-item" data-value="被月支合绊" onclick="selectSingle(this,5)">被月支合绊（事业/社交圈绊）</div>
+      <div class="option-item" data-value="被时支合绊" onclick="selectSingle(this,5)">被时支合绊（子女/未来绊）</div>
+      <div class="option-item" data-value="夫妻宫没有被引动" onclick="selectSingle(this,5)">夫妻宫没有被引动</div>
+    </div>
+    <div class="result-box" id="result5">
+      <div class="result-title">结果</div>
+      <div class="result-content" id="resultContent5"></div>
+    </div>
+    <div class="btn-group"><button class="btn btn-prev" onclick="goPrev(5)">上一步</button><button class="btn btn-next" onclick="goNext(5)">下一步</button></div>
+  </div>
+
+  <!-- Page 6: 夫妻宫坐着谁（日支本气） -->
+  <div class="page" id="page6">
+    <div class="page-title">夫妻宫坐着谁（日支本气）</div>
+    <div class="page-desc">请选择日支本气所对应的十神及喜忌</div>
+    <div class="section-label">印星</div>
+    <div class="option-item" data-value="印星旺-喜神" onclick="selectSingle(this,6)">印星旺 — 喜神</div>
+    <div class="option-item" data-value="印星旺-忌神" onclick="selectSingle(this,6)">印星旺 — 忌神</div>
+    <div class="option-item" data-value="印星弱-喜神" onclick="selectSingle(this,6)">印星弱 — 喜神</div>
+    <div class="option-item" data-value="印星弱-忌神" onclick="selectSingle(this,6)">印星弱 — 忌神</div>
+    <div class="section-label">食伤</div>
+    <div class="option-item" data-value="食伤旺-喜神" onclick="selectSingle(this,6)">食伤旺 — 喜神</div>
+    <div class="option-item" data-value="食伤旺-忌神" onclick="selectSingle(this,6)">食伤旺 — 忌神</div>
+    <div class="option-item" data-value="食伤弱-喜神" onclick="selectSingle(this,6)">食伤弱 — 喜神</div>
+    <div class="option-item" data-value="食伤弱-忌神" onclick="selectSingle(this,6)">食伤弱 — 忌神</div>
+    <div class="section-label">比劫</div>
+    <div class="option-item" data-value="比劫旺-喜神" onclick="selectSingle(this,6)">比劫旺 — 喜神</div>
+    <div class="option-item" data-value="比劫旺-忌神" onclick="selectSingle(this,6)">比劫旺 — 忌神</div>
+    <div class="option-item" data-value="比劫弱-喜神" onclick="selectSingle(this,6)">比劫弱 — 喜神</div>
+    <div class="option-item" data-value="比劫弱-忌神" onclick="selectSingle(this,6)">比劫弱 — 忌神</div>
+    <div class="section-label">财星</div>
+    <div class="option-item" data-value="财星旺-喜神" onclick="selectSingle(this,6)">财星旺 — 喜神</div>
+    <div class="option-item" data-value="财星旺-忌神" onclick="selectSingle(this,6)">财星旺 — 忌神</div>
+    <div class="option-item" data-value="财星弱-喜神" onclick="selectSingle(this,6)">财星弱 — 喜神</div>
+    <div class="option-item" data-value="财星弱-忌神" onclick="selectSingle(this,6)">财星弱 — 忌神</div>
+    <div class="section-label">官杀</div>
+    <div class="option-item" data-value="官杀旺-喜神" onclick="selectSingle(this,6)">官杀旺 — 喜神</div>
+    <div class="option-item" data-value="官杀旺-忌神" onclick="selectSingle(this,6)">官杀旺 — 忌神</div>
+    <div class="option-item" data-value="官杀弱-喜神" onclick="selectSingle(this,6)">官杀弱 — 喜神</div>
+    <div class="option-item" data-value="官杀弱-忌神" onclick="selectSingle(this,6)">官杀弱 — 忌神</div>
+    <div class="result-box" id="result6">
+      <div class="result-title">结果</div>
+      <div class="result-content" id="resultContent6"></div>
+    </div>
+    <div class="btn-group"><button class="btn btn-prev" onclick="goPrev(6)">上一步</button><button class="btn btn-next" onclick="goNext(6)">下一步</button></div>
+  </div>
+
+  <!-- Page 7: 日支藏干的十神（多选） -->
+  <div class="page" id="page7">
+    <div class="page-title">日支藏干的十神</div>
+    <div class="page-desc">请选择日支藏干对应的十神（可多选）</div>
+    <div class="option-group">
+      <div class="option-item multi" data-value="官杀" onclick="toggleMulti(this,7)">官杀 — 把伴侣当"权威/保护伞"</div>
+      <div class="option-item multi" data-value="财星" onclick="toggleMulti(this,7)">财星 — 把伴侣当"财神爷/现实依靠"</div>
+      <div class="option-item multi" data-value="印星" onclick="toggleMulti(this,7)">印星 — 把伴侣当"妈/精神避风港"，容易产生依赖</div>
+      <div class="option-item multi" data-value="比劫" onclick="toggleMulti(this,7)">比劫 — 把伴侣当"哥们/竞争对手"，容易互怼</div>
+      <div class="option-item multi" data-value="食伤" onclick="toggleMulti(this,7)">食伤 — 把伴侣当"粉丝/被崇拜者"</div>
+    </div>
+    <div class="result-box" id="result7">
+      <div class="result-title">结果</div>
+      <div class="result-content" id="resultContent7"></div>
+    </div>
+    <div class="btn-group"><button class="btn btn-prev" onclick="goPrev(7)">上一步</button><button class="btn btn-next" onclick="goNext(7)">下一步</button></div>
+  </div>
+
+  <!-- Page 8: 夫妻星与夫妻宫的喜忌互动 -->
+  <div class="page" id="page8">
+    <div class="page-title">夫妻星与夫妻宫的喜忌互动</div>
+    <div class="page-desc">请选择夫妻星与夫妻宫的互动关系</div>
+    <div class="section-label">夫妻星为喜 + 夫妻宫为喜</div>
+    <div class="option-item" data-value="喜+喜-夫妻星生夫妻宫" onclick="selectSingle(this,8)">夫妻星生夫妻宫</div>
+    <div class="option-item" data-value="喜+喜-夫妻星克夫妻宫" onclick="selectSingle(this,8)">夫妻星克夫妻宫</div>
+    <div class="option-item" data-value="喜+喜-夫妻宫生夫妻星" onclick="selectSingle(this,8)">夫妻宫生夫妻星</div>
+    <div class="option-item" data-value="喜+喜-夫妻宫克夫妻星" onclick="selectSingle(this,8)">夫妻宫克夫妻星</div>
+    <div class="option-item" data-value="喜+喜-同五行" onclick="selectSingle(this,8)">夫妻星与夫妻宫同五行</div>
+    <div class="option-item" data-value="喜+喜-同位" onclick="selectSingle(this,8)">夫妻星与夫妻宫同位</div>
+    <div class="section-label">夫妻星为喜 + 夫妻宫为忌</div>
+    <div class="option-item" data-value="喜+忌-夫妻星生夫妻宫" onclick="selectSingle(this,8)">夫妻星生夫妻宫</div>
+    <div class="option-item" data-value="喜+忌-夫妻星克夫妻宫" onclick="selectSingle(this,8)">夫妻星克夫妻宫</div>
+    <div class="option-item" data-value="喜+忌-夫妻宫生夫妻星" onclick="selectSingle(this,8)">夫妻宫生夫妻星</div>
+    <div class="option-item" data-value="喜+忌-夫妻宫克夫妻星" onclick="selectSingle(this,8)">夫妻宫克夫妻星</div>
+    <div class="option-item" data-value="喜+忌-同五行" onclick="selectSingle(this,8)">夫妻星与夫妻宫同五行</div>
+    <div class="option-item" data-value="喜+忌-同位" onclick="selectSingle(this,8)">夫妻星与夫妻宫同位</div>
+    <div class="section-label">夫妻星为忌 + 夫妻宫为喜</div>
+    <div class="option-item" data-value="忌+喜-夫妻星生夫妻宫" onclick="selectSingle(this,8)">夫妻星生夫妻宫</div>
+    <div class="option-item" data-value="忌+喜-夫妻星克夫妻宫" onclick="selectSingle(this,8)">夫妻星克夫妻宫</div>
+    <div class="option-item" data-value="忌+喜-夫妻宫生夫妻星" onclick="selectSingle(this,8)">夫妻宫生夫妻星</div>
+    <div class="option-item" data-value="忌+喜-夫妻宫克夫妻星" onclick="selectSingle(this,8)">夫妻宫克夫妻星</div>
+    <div class="option-item" data-value="忌+喜-同五行" onclick="selectSingle(this,8)">夫妻星与夫妻宫同五行</div>
+    <div class="option-item" data-value="忌+喜-同位" onclick="selectSingle(this,8)">夫妻星与夫妻宫同位</div>
+    <div class="section-label">夫妻星为忌 + 夫妻宫为忌</div>
+    <div class="option-item" data-value="忌+忌-夫妻星生夫妻宫" onclick="selectSingle(this,8)">夫妻星生夫妻宫</div>
+    <div class="option-item" data-value="忌+忌-夫妻星克夫妻宫" onclick="selectSingle(this,8)">夫妻星克夫妻宫</div>
+    <div class="option-item" data-value="忌+忌-夫妻宫生夫妻星" onclick="selectSingle(this,8)">夫妻宫生夫妻星</div>
+    <div class="option-item" data-value="忌+忌-夫妻宫克夫妻星" onclick="selectSingle(this,8)">夫妻宫克夫妻星</div>
+    <div class="option-item" data-value="忌+忌-同五行" onclick="selectSingle(this,8)">夫妻星与夫妻宫同五行</div>
+    <div class="option-item" data-value="忌+忌-同位" onclick="selectSingle(this,8)">夫妻星与夫妻宫同位</div>
+    <div class="result-box" id="result8">
+      <div class="result-title">结果</div>
+      <div class="result-content" id="resultContent8"></div>
+    </div>
+    <div class="btn-group"><button class="btn btn-prev" onclick="goPrev(8)">上一步</button><button class="btn btn-next" onclick="goNext(8)">下一步</button></div>
+  </div>
+
+  <!-- Page 9: 全局病根与状态 -->
+  <div class="page" id="page9">
+    <div class="page-title">全局病根与状态</div>
+    <div class="page-desc">请选择您的全局病根类型</div>
+    <div class="section-label">淤堵型</div>
+    <div class="option-item" data-value="淤堵-食伤旺透" onclick="selectSingle(this,9)">食伤旺透，克制官杀、泄财星</div>
+    <div class="option-item" data-value="淤堵-食伤克官杀" onclick="selectSingle(this,9)">食伤直接克制官杀</div>
+    <div class="option-item" data-value="淤堵-比劫林立" onclick="selectSingle(this,9)">比劫林立，无官杀制、无食伤泄</div>
+    <div class="option-item" data-value="淤堵-印星过旺" onclick="selectSingle(this,9)">印星过旺，克制食伤</div>
+    <div class="section-label">火灾型</div>
+    <div class="option-item" data-value="火灾-总遇错人" onclick="selectSingle(this,9)">总遇错的人</div>
+    <div class="option-item" data-value="火灾-对方消耗" onclick="selectSingle(this,9)">对方消耗你</div>
+    <div class="option-item" data-value="火灾-控制欲强" onclick="selectSingle(this,9)">伴侣控制欲强，窒息</div>
+    <div class="section-label">水灾型</div>
+    <div class="option-item" data-value="水灾-缘分不出现" onclick="selectSingle(this,9)">缘分不出现</div>
+    <div class="option-item" data-value="水灾-付出没回报" onclick="selectSingle(this,9)">付出没回报</div>
+    <div class="option-item" data-value="水灾-不敢投入" onclick="selectSingle(this,9)">不敢投入，怕受伤</div>
+    <div class="section-label">断裂型</div>
+    <div class="option-item" data-value="断裂-小事翻脸" onclick="selectSingle(this,9)">一点小事就翻脸</div>
+    <div class="option-item" data-value="断裂-异地阻隔" onclick="selectSingle(this,9)">异地阻隔</div>
+    <div class="section-label">错位型</div>
+    <div class="option-item" data-value="错位-搅局" onclick="selectSingle(this,9)">每次快成了，总有事情搅和</div>
+    <div class="option-item" data-value="错位-原生家庭干预" onclick="selectSingle(this,9)">原生家庭/闺蜜/兄弟干预</div>
+    <div class="result-box" id="result9">
+      <div class="result-title">结果</div>
+      <div class="result-content" id="resultContent9"></div>
+    </div>
+    <div class="btn-group"><button class="btn btn-prev" onclick="goPrev(9)">上一步</button><button class="btn btn-next" onclick="goNext(9)">下一步</button></div>
+  </div>
+
+  <!-- Page 10: 婚姻状态 -->
+  <div class="page" id="page10">
+    <div class="page-title">婚姻状态</div>
+    <div class="page-desc">请选择您当前的婚姻状态</div>
+    <div class="option-group">
+      <div class="option-item" data-value="未婚" onclick="selectSingle(this,10)">未婚</div>
+      <div class="option-item" data-value="已婚" onclick="selectSingle(this,10)">已婚</div>
+      <div class="option-item" data-value="离婚" onclick="selectSingle(this,10)">离婚</div>
+    </div>
+    <div class="result-box" id="result10">
+      <div class="result-title">结果</div>
+      <div class="result-content" id="resultContent10"></div>
+    </div>
+    <div class="btn-group"><button class="btn btn-prev" onclick="goPrev(10)">上一步</button><button class="btn btn-summary" onclick="showSummary()">查看总结</button></div>
+  </div>
+
+  <!-- Summary Page -->
+  <div class="summary-page" id="summaryPage">
+    <div class="summary-title">婚姻分析报告 · 总结</div>
+    <div class="summary-subtitle" id="summarySubtitle"></div>
+    <div id="summaryContent"></div>
+    <button class="restart-btn" onclick="restart()">重新测试</button>
+  </div>
+
+</div>
+
+<script>
+var totalPages = 11;
+var currentPage = 0;
+var selections = {};
+
+var db = {
+  "有无夫妻星": {
+    "没有夫妻星": "缘分薄，婚姻来的晚，或者对婚姻不感兴趣。",
+    "有夫妻星_女_正官七杀": "女的夫妻星是正官、七杀。\n正官/正财：正统、合法、持久的婚姻。\n七杀/偏财：激情、偏门、不稳定的缘分。\n官杀混杂/财星混杂：容易多段感情，或者婚前有纠葛。",
+    "有夫妻星_男_正财偏财": "男的夫妻星是正财、偏财。\n正官/正财：正统、合法、持久的婚姻。\n七杀/偏财：激情、偏门、不稳定的缘分。\n官杀混杂/财星混杂：容易多段感情，或者婚前有纠葛。"
+  },
+  "夫妻星的强弱": {
+    "夫妻星强-喜神": "伴侣能力强，能帮到自己，婚姻幸福。",
+    "夫妻星强-忌神": "伴侣是来讨债的，给自己带来巨大压力。",
+    "夫妻星弱-喜神": "伴侣人很好，但能力有限，帮不上大忙。",
+    "夫妻星弱-忌神": "伴侣想管你，但没那个实力，最后变成两人的心理暗战。"
+  },
+  "夫妻星的位置": {
+    "夫妻星在年干": "伴侣可能来自异地、异国，或者你们年龄差距较大。另一种可能是，对方在社会上有一定的知名度/地位，你"仰慕"他的光环而结合。这叫"天上掉下个林妹妹/白马王子"。",
+    "夫妻星在年支": "通常是"青梅竹马但后来异地"，或者是"通过长辈/包办"认识的。另一种极端是，这代表一段非常早恋、非常不成熟的早年感情，虽然刻骨铭心，但很难走到最后（因为离日柱太远，留不住）。",
+    "夫妻星在月干": "大概率是"同事、同学、同行"。你们的相识带有很强的社交属性，恋爱过程周围人都知道。伴侣可能是你事业上的帮手，或者你们经常在社交场合出双入对。",
+    "夫妻星在月支": "也是通过工作或朋友介绍认识，但关系发展更隐秘一些。伴侣往往在你深耕的某个特定领域里（比如同一个公司但不同部门，或者同一个大圈子的核心圈）。",
+    "夫妻星在日支": "伴侣就是你的家常便饭。你们多半是闪婚、同居时间长，或者伴侣的性格与你的家庭生活完美融合。这是缘分最深、最难分开（无论好坏）的位置。",
+    "夫妻星在时干": "典型的"晚婚"。或者伴侣的年龄比你小很多（时柱为晚辈）。也有可能对对方原本是你的下属、被你管理的人，后来才转为伴侣关系。",
+    "夫妻星在时支": ""隐婚"、"地下情"的高发地带。这段关系不见光，或者你们长期分居（物理距离远）。",
+    "夫妻星不显": "缘分极度薄弱：圈子里没有合适的人，恋爱经历极少。被动型相亲：几乎不可能自由恋爱，全靠长辈强行安排（因为星太弱，需要外力推）。伴侣透明人：结了婚，伴侣在社会上也没啥存在感，是个极其低调、甚至有些"窝囊"的人。",
+    "夫妻星与日主相合/相克": "伴侣对你的影响是直来直去的，你的自我意识里全是他。你们可能天天黏在一起，或者他的一举一动直接牵动你的情绪。这叫"命里有他，躲都躲不掉"。"
+  },
+  "夫妻宫的喜忌": {
+    "夫妻宫为喜": {
+      "default": "伴侣是贵人，婚姻生活本身也让你感到舒心、有依靠。这种人结婚后事业会变顺，心态变稳，伴侣是自己的"福星"。",
+      "位置_日支": "伴侣本人不太靠谱，但婚姻本身的氛围或外界条件（如经济、家庭）给了你支撑。比如你老公脾气差，但他家里有钱，让你物质无忧；或者你老婆控制欲强，但她持家有方，让你事业无后顾之忧。环境兜住了人。",
+      "位置_非日支": "伴侣本人靠谱、有能力，但婚姻本身的环境（家庭、婆媳、经济）让你感到痛苦。比如你嫁了个好人，但婆媳关系把你快逼疯了；或者你娶了个贤惠老婆，但丈母娘天天上门闹。人的质量过关，但环境折磨人。"
+    },
+    "夫妻宫为忌": "伴侣本人就是来消耗你的，婚姻环境也让你压抑、喘不过气。结婚后易破财、多病、心情抑郁。"
+  },
+  "夫妻宫是否被引动": {
+    "夫妻宫被冲": "极度不稳定。恋爱中必然伴随着频繁的剧烈争吵、突然的变故。如果冲力极大，往往表现为"物理上的强制分离"，比如一方突然被调职、出国、或者因为不可抗力被迫分手。这是异地恋最常见的标志性结构。",
+    "夫妻宫被害": "婚姻里有说不清道不明的隔阂，彼此有防备心，容易因误会闹矛盾。",
+    "夫妻宫被刑": "不是轰轰烈烈的分手，而是长期的冷暴力、互相折磨、互相挑刺。最后往往是因为某件极其微小的事情，成为了压死骆驼的最后一根稻草，疲惫不堪地散场。",
+    "夫妻宫被合": "你的心根本不在伴侣身上，你的注意力被工作（合化成官杀）、被朋友（合化成比劫）、或者被某种爱好完全吸走了。伴侣觉得你"人在心不在"，这种感情通常熬不过平淡期，很快就会因为"没感觉了"而和平分手。",
+    "被年支合绊": "（长辈/原生家庭绊）：感情被父母、长辈、或者地域差异死死绊住。比如父母死活不同意，或者因为要回老家发展而被迫分开。",
+    "被月支合绊": "（事业/社交圈绊）：感情被工作、朋友圈子、或者某个特定的环境给缠住了。比如两人都是工作狂，感情被事业彻底挤占；或者被某个共同的朋友/合伙人搅局。",
+    "被时支合绊": "（子女/未来绊）：往往是因为意外怀孕、孩子的问题、或者对未来的某种不确定性，导致关系被绊住。",
+    "夫妻宫没有被引动": "婚后觉得家是温馨的港湾，或者结婚能让你事业更上一层楼。婚后的生活环境好，家里温馨。伴侣是贵人，婚姻生活本身也让你感到舒心、有依靠。这种人结婚后事业会变顺，心态变稳，伴侣是自己的"福星"。"
+  },
+  "夫妻宫坐着谁": {
+    "印星旺-喜神": "伴侣性情相投，相处轻松愉快，但遇到现实难题时支撑力偏弱，适合玩伴而非战友。",
+    "印星旺-忌神": "伴侣自尊心强但实力有限，遇事容易推卸责任或嘴硬，给人"心比天高"的无奈感。",
+    "印星弱-喜神": "伴侣务实能干，有一定经济头脑或资源积累，能提供较为稳定的物质基础。",
+    "印星弱-忌神": "伴侣对金钱执念较重，显得精明甚至算计，容易因利益问题与您产生分歧，情感温度较低。",
+    "食伤旺-喜神": "伴侣有浪漫想法，但实践能力偏弱，想法多落不到实处，生活中显得不够踏实。",
+    "食伤旺-忌神": "伴侣偶尔会抱怨或抬杠，但底气不足，翻不起大浪，更多表现为发牢骚，不影响大局。",
+    "食伤弱-喜神": "伴侣独立有主见，两人像搭档一样平等相处，遇事能共同承担，关系较为清爽。",
+    "食伤弱-忌神": "伴侣自我意识较强，凡事喜欢争高低，容易让您觉得家中缺乏温情，像在竞争而非过日子。",
+    "比劫旺-喜神": "伴侣风趣幽默，有一定才艺或见识，能带来生活情趣，在思想交流上较有共鸣。",
+    "比劫旺-忌神": "伴侣有照顾之心，但能力或资源有限，关心有时显得力不从心，更多停留在精神陪伴层面。",
+    "比劫弱-喜神": "伴侣有较强的照顾能力，能在生活与精神层面给予支持，让您感到安稳、被包容。",
+    "比劫弱-忌神": "伴侣习惯唠叨或提建议，但威信不足，影响有限，主要表现是话语较多，实际约束力不强。",
+    "财星旺-喜神": "伴侣有担当，遇事能出面解决，能给您较强的安全感和依靠感，是家庭的主心骨。",
+    "财星旺-忌神": "伴侣控制欲较强，喜欢定规矩，容易让您感到被管束、被压制，家庭氛围较为紧张。",
+    "财星弱-喜神": "伴侣有责任感，愿意为您遮风挡雨，但实际能力或资源有限，想帮却常常帮不上忙。",
+    "财星弱-忌神": "伴侣习惯摆架子、充权威，但一遇真事就退缩，让您既不服他的做派，又看不上他的实际表现。",
+    "官杀旺-喜神": "伴侣有担当，遇事能出面解决，能给您较强的安全感和依靠感，是家庭的主心骨。",
+    "官杀旺-忌神": "伴侣控制欲较强，喜欢定规矩，容易让您感到被管束、被压制，家庭氛围较为紧张。",
+    "官杀弱-喜神": "伴侣有责任感，愿意为您遮风挡雨，但实际能力或资源有限，想帮却常常帮不上忙。",
+    "官杀弱-忌神": "伴侣习惯摆架子、充权威，但一遇真事就退缩，让您既不服他的做派，又看不上他的实际表现。"
+  },
+  "日支藏干的十神": {
+    "官杀": "把伴侣当"权威/保护伞"",
+    "财星": "把伴侣当"财神爷/现实依靠"",
+    "印星": "把伴侣当"妈/精神避风港"，容易产生依赖",
+    "比劫": "把伴侣当"哥们/竞争对手"，容易互怼",
+    "食伤": "把伴侣当"粉丝/被崇拜者""
+  },
+  "夫妻星与夫妻宫的喜忌互动": {
+    "喜+喜-夫妻星生夫妻宫": "男方不仅优质，而且极其愿意付出，把所有的爱、资源、情绪价值都倾注在婚姻里。女方在婚姻里被滋养得越来越好。（大吉）",
+    "喜+喜-夫妻星克夫妻宫": "伴侣是个有担当的人，虽然有时管得严了点，但您心里踏实。这段婚姻稳得住。",
+    "喜+喜-夫妻宫生夫妻星": "强强联手，你给足后盾，男方也争气，你把他捧成了大哥，他是真感激你。",
+    "喜+喜-夫妻宫克夫妻星": "你伴侣脾气好、会来事，用聪明的规矩把本来就不错的老公管得服服帖帖，顺风顺水。",
+    "喜+喜-同五行": "不仅伴侣本身很棒，而且婚姻的大环境也非常助力你们。你们俩一拍即合，外界环境也给你们开绿灯，属于"天时地利人和"。",
+    "喜+喜-同位": "伴侣完全符合你对婚姻的期待，他的人格魅力和你们的家风完美融合。你觉得"找对人了"，没错。",
+    "喜+忌-夫妻星生夫妻宫": "男方人很好，极度包容、极度付出。但女方本身性格有缺陷（比如极度作、抑郁、或者女方家是个无底洞）。男方的"好"不仅没治好婚姻的"病"，反而被吸干了，最后男方被拖垮、被逼疯。（男方大凶，女方未必觉得凶）",
+    "喜+忌-夫妻星克夫妻宫": "好的伴侣强行帮你收拾烂摊子，过程有点粗暴，但结果管用。",
+    "喜+忌-夫妻宫生夫妻星": "你脾气差或家里一团糟，但偏偏把所有资源和好脾气都给伴侣，硬把他逼成功了，他怕你又依赖你。",
+    "喜+忌-夫妻宫克夫妻星": "你脾气太暴躁或控制欲太强，硬生生把一个原本有潜力、挺老实的好老公，给耗干了、逼抑郁了。",
+    "喜+忌-同五行": "伴侣本身是你讨厌的类型，而你们的家风/婚姻状态也让你极其压抑。因为星宫合一，你逃无可逃，想改变伴侣也等于否定婚姻，想换个环境也离不开这个人。",
+    "喜+忌-同位": "伴侣本身是你讨厌的类型，而你们的家风/婚姻状态也让你极其压抑。因为星宫合一，你逃无可逃。",
+    "忌+喜-夫妻星生夫妻宫": "男方本质上自私、甚至有毒，但他极其擅长提供情绪价值，精准地击中了女方最渴望的软肋。女方明知道是个坑，但像吸食毒品一样离不开，在虚假的滋润中走向毁灭。（大凶，精神奴役）",
+    "忌+喜-夫妻星克夫妻宫": "本来日子过得挺好，结果伴侣沾染恶习或脾气暴躁，硬生生把家拆散了。",
+    "忌+喜-夫妻宫生夫妻星": "你越能干、越倒贴，男方越废柴、越得寸进尺，典型的把巨婴养大了。",
+    "忌+喜-夫妻宫克夫妻星": "你明事理、兜得住底，硬是用你的好脾气和底线，死死压制住老公的烂毛病，很累但家没散。",
+    "忌+喜-同五行": "伴侣本身毛病很大，而你们的婚姻环境/相处模式也在纵容这种毛病。两个人在烂泥潭里疯狂打滚，外人根本插不手。",
+    "忌+喜-同位": "伴侣本身是你讨厌的类型，而你们的家风/婚姻状态也让你极其压抑。因为星宫合一，你逃无可逃，想改变伴侣也等于否定婚姻。",
+    "忌+忌-夫妻星生夫妻宫": "两个烂人在泥潭里互撕。男方带来负能量，女方本身也一地鸡毛，两人在一起就是互相折磨、互相拖累，但谁也舍不得走。（大凶，底层互害）",
+    "忌+忌-夫妻星克夫妻宫": "两个都有毛病，互不相让，天天掐架，谁也落不着好。",
+    "忌+忌-夫妻宫生夫妻星": "你天天抱怨、作闹，硬生生把一个原本还行的伴侣，逼得暴躁或躺平了。",
+    "忌+忌-夫妻宫克夫妻星": "你作他也烂，家里天天是高压管制和互相报复，看谁先被谁气出病来，纯粹的互害。",
+    "忌+忌-同五行": "伴侣本身毛病很大，而你们的婚姻环境/相处模式也在纵容这种毛病。两个人在烂泥潭里疯狂打滚，外人根本插不手。",
+    "忌+忌-同位": "伴侣本身是你讨厌的类型，而你们的家风/婚姻状态也让你极其压抑。因为星宫合一，你逃无可逃，想改变伴侣也等于否定婚姻，想换个环境也离不开这个人。"
+  },
+  "全局病根": {
+    "淤堵-食伤旺透": { "状态": "眼光高挑剔，恋爱时间短", "化解": "泄身：学一门技术、高强度运动、先让自己"充实"起来。能量有处去，挑剔自然降。\n大运流年：逢"金"年（女命泄土生官）、逢"火"年（男命泄木生财），都是开启学习的窗口。" },
+    "淤堵-食伤克官杀": { "状态": "嘴硬心软", "化解": "换表达方式：先写后说、运动后说、设置"情绪冷却时间"。把"出口"从嘴巴转移到别处。\n大运流年：逢"金"年（泄土生水，使表达变柔）、逢"水"年（润燥降火），都是练习温和表达的好时机。" },
+    "淤堵-比劫林立": { "状态": "自我为中心，不懂得妥协和提供情绪价值，恋爱时间短", "化解": "发展共同目标、学倾听、每天留一段时间"只听不说"。把过剩的"我"能量引向"我们"。\n大运流年：逢"官杀"年（制比劫，引入规则）、逢"食伤"年（引入表达，学倾听）。" },
+    "淤堵-印星过旺": { "状态": "心里有话说不出，自我封锁", "化解": "先写后说 + 定个固定沟通时间。\n大运流年：逢"金"年（生水润局）、逢"木"年（泄水生火），都是开启表达的窗口。" },
+    "火灾-总遇错人": { "状态": "总遇错的人", "化解": "去北方、去水边、调饮食、换环境。先降温，再选人。\n大运流年：逢"水"年（亥子）、逢"湿土"年（辰丑），都是降温换脑的好时机。" },
+    "火灾-对方消耗": { "状态": "对方消耗你", "化解": "游泳、冥想、规律作息、先护住自己。您是"被烤"的一方，先补自己的"水"。\n大运流年：逢"水"年（亥子），优先补水自救；逢"湿土"年（辰丑），蓄水润局。" },
+    "火灾-控制欲强": { "状态": "伴侣控制欲强，窒息", "化解": "拉开距离：分房、独处、暂时减少接触。温度降了，才能正常说话。\n大运流年：逢"水"年（亥子），硬碰硬的模式会被水软化。" },
+    "水灾-缘分不出现": { "状态": "缘分不出现", "化解": "引土制水：换环境、定边界、明确"我需要什么"。用"规矩"代替"随缘"。\n大运流年：逢"土"年（辰戌丑未）、逢"火"年（巳午），都是破局窗口。" },
+    "水灾-付出没回报": { "状态": "付出没回报", "化解": "筑坝固堤（设边界）+ 切断源头（远离消耗者）。先护住自己的付出。\n大运流年：逢"土"年（辰戌丑未），筑坝成功；逢"火"年，辅助调候。" },
+    "水灾-不敢投入": { "状态": "不敢投入，怕受伤", "化解": "筑坝固堤（先定安全边界）+ 引土（信任但先验证）。不逼自己全开，但开一条缝。\n大运流年：逢"土"年（辰戌丑未），建立安全感；逢"木"年，帮助打开。" },
+    "断裂-小事翻脸": { "状态": "一点小事就翻脸", "化解": "物理隔离（缓冲带）：异地、分居、找个第三方目标（孩子/事业）分散火力。\n大运流年：逢"合"年，把冲/刑/害暂时锁住，关系缓和。" },
+    "断裂-异地阻隔": { "状态": "异地阻隔", "化解": "物理隔离 + 找通关：先接受异地，再找"合"来锁住关系。不强行结束异地。\n大运流年：逢"合"年，关系被锁住，异地不再冲击核心。" },
+    "错位-搅局": { "状态": "每次快成了，总有事情搅和", "化解": "切断源头（破合）：搬家、换圈子、物理远离"搅局者"。\n大运流年：逢"冲开合化"的年（如申冲寅、辰冲戌），破合成功。" },
+    "错位-原生家庭干预": { "状态": "原生家庭/闺蜜/兄弟干预", "化解": "切断源头：搬家、换社交圈、物理远离"搅局者"。\n大运流年：逢"冲开合化"的年，破合成功，关系回归自主。" }
+  },
+  "婚姻状态_未婚": {
+    "夫妻星是否出现": {
+      "夫妻星现身": "伴侣极其想娶你/嫁你，进度极快（可能闪婚）。",
+      "夫妻星被合出来": "伴侣极其想娶你/嫁你，进度极快（可能闪婚）。"
+    },
+    "夫妻宫是否被引动": {
+      "夫妻宫被冲": "代表物理上的分离（分居、冷战、出差长期不见面）。",
+      "夫妻宫被合走": "代表伴侣的心/精力被外面的人或事（如赌博、游戏、其他女人）完全吸走。",
+      "夫妻宫合绊": "代表伴侣的心/精力被外面的人或事情牵制。",
+      "夫妻宫被害": "代表冷战、互相消耗，内耗。",
+      "夫妻宫被刑": "代表冷战、互相消耗，内耗。"
+    },
+    "夫妻星与夫妻宫互动": {
+      "夫妻星生夫妻宫": "伴侣极其想娶你/嫁你，进度极快（可能闪婚）。",
+      "夫妻星合夫妻宫": "伴侣极其想娶你/嫁你，进度极快（可能闪婚）。",
+      "夫妻星克夫妻宫": "伴侣追你，但你家里强烈反对，或者你觉得这伴侣压迫感太强，谈得极其痛苦，落不了地。",
+      "夫妻星冲夫妻宫": "伴侣追你，但你家里强烈反对，或者你觉得这伴侣压迫感太强，谈得极其痛苦，落不了地。"
+    },
+    "结婚应期": "大运流年补足喜用神力量。流年带红鸾或天喜，会加大"想恋爱、想成家"的情绪波动。"
+  },
+  "婚姻状态_已婚": {
+    "夫妻星到位": "夫妻星到位，婚姻成立。",
+    "夫妻宫被引动": {
+      "夫妻宫被冲": "代表物理上的分离（分居、冷战、出差长期不见面）。",
+      "夫妻宫被合走": "代表伴侣的心/精力被外面的人或事（如赌博、游戏、其他女人）完全吸走。",
+      "夫妻宫合绊": "代表伴侣的心/精力被外面的人或事情牵制。",
+      "夫妻宫被害": "代表冷战、互相消耗，内耗。",
+      "夫妻宫被刑": "代表冷战、互相消耗，内耗。"
+    },
+    "离婚应期": {
+      "夫妻星被克或合走": "流年把夫妻星彻底打死、合走、或者冲散时，婚姻的纽带就断了。",
+      "夫妻宫逢冲": "大运或流年，直接冲克日支，代表关系突然破裂、异地分居、或剧烈冲突。",
+      "忌神加力喜神重创": "如果大运加强了你的忌神，你会对婚姻极度厌烦，主动想离。"
+    }
+  },
+  "婚姻状态_离婚": {
+    "离婚应期": {
+      "夫妻星被克或合走": "流年把夫妻星彻底打死、合走、或者冲散时，婚姻的纽带就断了。",
+      "夫妻宫逢冲": "大运或流年，直接冲克日支，代表关系突然破裂、异地分居、或剧烈冲突。",
+      "忌神加力喜神重创": "如果大运加强了你的忌神，你会对婚姻极度厌烦，主动想离。"
+    },
+    "离婚后状态": {
+      "又来了忌神": "代表前夫又来纠缠，或者那种"窒息感、自我怀疑"的心理创伤再次复发。",
+      "克制了忌神": "代表她终于把过去那个软弱的自己杀死了，彻底走出来。",
+      "夫妻宫为忌": "财星的拉扯。"比劫夺财"或"官杀混杂"代表为了财产分割、孩子抚养权，与前夫/前妻发生极其丑陋的撕逼。"
+    }
+  }
+};
+
+function selectSingle(el, idx) {
+  var items = el.parentNode.querySelectorAll('.option-item');
+  for (var i = 0; i < items.length; i++) items[i].classList.remove('selected');
+  el.classList.add('selected');
+  selections['p' + idx] = el.getAttribute('data-value');
+  showResult(idx);
+}
+
+function toggleMulti(el, idx) {
+  el.classList.toggle('selected');
+  var items = el.parentNode.querySelectorAll('.option-item.selected');
+  var vals = [];
+  for (var i = 0; i < items.length; i++) vals.push(items[i].getAttribute('data-value'));
+  selections['p' + idx] = vals;
+  showResult(idx);
+}
+
+function showResult(idx) {
+  var val = selections['p' + idx];
+  var box = document.getElementById('result' + idx);
+  var content = document.getElementById('resultContent' + idx);
+  if (!val || (Array.isArray(val) && val.length === 0)) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  var text = '';
+
+  if (idx === 1) {
+    if (val === '没有夫妻星') {
+      text = db['有无夫妻星']['没有夫妻星'];
+    } else {
+      var gender = selections['p0'] || '男';
+      if (gender === '女') {
+        text = db['有无夫妻星']['有夫妻星_女_正官七杀'];
+      } else {
+        text = db['有无夫妻星']['有夫妻星_男_正财偏财'];
+      }
+    }
+  } else if (idx === 4) {
+    var fcg = db['夫妻宫的喜忌'][val];
+    if (typeof fcg === 'object') {
+      var pos = selections['p3'] || '';
+      if (pos === '夫妻星在日支') {
+        text = fcg['位置_日支'];
+      } else if (val === '夫妻宫为喜') {
+        text = fcg['位置_非日支'];
+      } else {
+        text = fcg['default'] || fcg;
+      }
+    } else {
+      text = fcg;
+    }
+  } else if (idx === 7) {
+    var results = [];
+    for (var i = 0; i < val.length; i++) {
+      results.push(val[i] + '：' + db['日支藏干的十神'][val[i]]);
+    }
+    text = results.join('\n\n');
+  } else if (idx === 9) {
+    var d = db['全局病根'][val];
+    text = '【状态】' + d['状态'] + '\n\n【化解方法】\n' + d['化解'];
+  } else if (idx === 10) {
+    // 婚姻状态 — 展示对应的详细内容
+    if (val === '未婚') {
+      text = buildMaritalDetail('未婚');
+    } else if (val === '已婚') {
+      text = buildMaritalDetail('已婚');
+    } else if (val === '离婚') {
+      text = buildMaritalDetail('离婚');
+    }
+  } else {
+    var keyMap = {2:'夫妻星的强弱',3:'夫妻星的位置',5:'夫妻宫是否被引动',6:'夫妻宫坐着谁',8:'夫妻星与夫妻宫的喜忌互动'};
+    if (keyMap[idx]) text = db[keyMap[idx]][val] || '';
+  }
+  content.textContent = text;
+}
+
+function buildMaritalDetail(status) {
+  var key = '婚姻状态_' + status;
+  var data = db[key];
+  var lines = [];
+  if (status === '未婚') {
+    lines.push('【夫妻星是否出现】');
+    lines.push('  夫妻星现身/被合出来：伴侣极其想娶你/嫁你，进度极快（可能闪婚）。');
+    lines.push('');
+    lines.push('【夫妻宫是否被引动】');
+    lines.push('  夫妻宫被冲：代表物理上的分离（分居、冷战、出差长期不见面）。');
+    lines.push('  夫妻宫被合走：代表伴侣的心/精力被外面的人或事完全吸走。');
+    lines.push('  夫妻宫合绊：代表伴侣的心/精力被外面的人或事情牵制。');
+    lines.push('  夫妻宫被害/被刑：代表冷战、互相消耗，内耗。');
+    lines.push('');
+    lines.push('【夫妻星与夫妻宫互动】');
+    lines.push('  夫妻星生/合夫妻宫：伴侣极其想娶你/嫁你，进度极快（可能闪婚）。');
+    lines.push('  夫妻星克/冲夫妻宫：伴侣追你，但你家里强烈反对，谈得极其痛苦，落不了地。');
+    lines.push('');
+    lines.push('【结婚应期】');
+    lines.push('  大运流年补足喜用神力量。流年带红鸾或天喜，会加大"想恋爱、想成家"的情绪波动。');
+  } else if (status === '已婚') {
+    lines.push('【夫妻星到位】');
+    lines.push('  夫妻星到位，婚姻成立。');
+    lines.push('');
+    lines.push('【夫妻宫被引动】');
+    lines.push('  夫妻宫被冲：代表物理上的分离（分居、冷战、出差长期不见面）。');
+    lines.push('  夫妻宫被合走：代表伴侣的心/精力被外面的人或事完全吸走。');
+    lines.push('  夫妻宫合绊：代表伴侣的心/精力被外面的人或事情牵制。');
+    lines.push('  夫妻宫被害/被刑：代表冷战、互相消耗，内耗。');
+    lines.push('');
+    lines.push('【离婚应期】');
+    lines.push('  夫妻星被克或合走：流年把夫妻星彻底打死、合走、或者冲散时，婚姻的纽带就断了。');
+    lines.push('  夫妻宫逢冲：大运或流年，直接冲克日支，代表关系突然破裂、异地分居、或剧烈冲突。');
+    lines.push('  忌神加力、喜神重创：如果大运加强了你的忌神，你会对婚姻极度厌烦，主动想离。');
+  } else if (status === '离婚') {
+    lines.push('【离婚应期】');
+    lines.push('  夫妻星被克或合走：流年把夫妻星彻底打死、合走、或者冲散时，婚姻的纽带就断了。');
+    lines.push('  夫妻宫逢冲：大运或流年，直接冲克日支，代表关系突然破裂、异地分居、或剧烈冲突。');
+    lines.push('  忌神加力、喜神重创：如果大运加强了你的忌神，你会对婚姻极度厌烦，主动想离。');
+    lines.push('');
+    lines.push('【离婚后状态】');
+    lines.push('  又来了忌神：代表前夫又来纠缠，或者那种"窒息感、自我怀疑"的心理创伤再次复发。');
+    lines.push('  克制了忌神：代表她终于把过去那个软弱的自己杀死了，彻底走出来。');
+    lines.push('  夫妻宫为忌：财星的拉扯。"比劫夺财"或"官杀混杂"代表为了财产分割、孩子抚养权，与前夫/前妻发生极其丑陋的撕逼。');
+  }
+  return lines.join('\n');
+}
+
+function updateProgress() {
+  var pct = (currentPage / totalPages) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = '第 ' + (currentPage + 1) + ' 步 / 共 ' + (totalPages + 1) + ' 步';
+}
+
+function goNext(idx) {
+  var val = selections['p' + idx];
+  if (!val || (Array.isArray(val) && val.length === 0)) { alert('请先选择一个选项'); return; }
+  document.getElementById('page' + idx).classList.remove('active');
+  currentPage = idx + 1;
+  document.getElementById('page' + currentPage).classList.add('active');
+  updateProgress();
+  window.scrollTo(0, 0);
+}
+
+function goPrev(idx) {
+  document.getElementById('page' + idx).classList.remove('active');
+  currentPage = idx - 1;
+  document.getElementById('currentPage').classList.add('active');
+  updateProgress();
+  window.scrollTo(0, 0);
+}
+
+function showSummary() {
+  var val = selections['p10'];
+  if (!val) { alert('请先选择一个选项'); return; }
+  
+  // Hide all pages, show summary
+  var pages = document.querySelectorAll('.page');
+  for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
+  document.getElementById('summaryPage').classList.add('active');
+  
+  var gender = selections['p0'] || '男';
+  var html = '';
+  
+  // === 基本信息 ===
+  html += '<div class="summary-card">';
+  html += '<div class="summary-card-label">基本信息</div>';
+  html += '<div class="summary-card-value">' + gender + '</div>';
+  html += '</div>';
+  
+  // === 有无夫妻星 ===
+  var p1val = selections['p1'] || '';
+  html += '<div class="summary-card">';
+  html += '<div class="summary-card-label">有无夫妻星</div>';
+  html += '<div class="summary-card-value">' + p1val + '</div>';
+  if (p1val === '没有夫妻星') {
+    html += '<div class="summary-card-result">' + db['有无夫妻星']['没有夫妻星'] + '</div>';
+  } else {
+    var k = gender === '女' ? '有夫妻星_女_正官七杀' : '有夫妻星_男_正财偏财';
+    html += '<div class="summary-card-result">' + db['有无夫妻星'][k] + '</div>';
+  }
+  html += '</div>';
+  
+  // === 夫妻星的强弱 ===
+  var p2val = selections['p2'] || '';
+  html += '<div class="summary-card">';
+  html += '<div class="summary-card-label">夫妻星的强弱</div>';
+  html += '<div class="summary-card-value">' + p2val.split('-').pop() + '</div>';
+  html += '<div class="summary-card-result">' + (db['夫妻星的强弱'][p2val] || '') + '</div>';
+  html += '</div>';
+  
+  // === 夫妻星的位置 ===
+  var p3val = selections['p3'] || '';
+  html += '<div class="summary-card">';
+  html += '<div class="summary-card-label">夫妻星的位置</div>';
+  html += '<div class="summary-card-value">' + p3val + '</div>';
+  html += '<div class="summary-card-result">' + (db['夫妻星的位置'][p3val] || '') + '</div>';
+  html += '</div>';
+  
+  // === 夫妻宫的喜忌 ===
+  var p4val = selections['p4'] || '';
+  html += '<div class="summary-card">';
+  html += '<div class="summary-card-label">夫妻宫的喜忌</div>';
+  html += '<div class="summary-card-value">' + p4val + '</div>';
+  var fcg = db['夫妻宫的喜忌'][p4val];
+  var fcgText = '';
+  if (typeof fcg === 'object') {
+    var pos = selections['p3'] || '';
+    if (pos === '夫妻星在日支') { fcgText = fcg['位置_日支']; }
+    else if (p4val === '夫妻宫为喜') { fcgText = fcg['位置_非日支']; }
+    else { fcgText = fcg['default'] || ''; }
+  } else { fcgText = fcg; }
+  html += '<div class="summary-card-result">' + fcgText + '</div>';
+  html += '</div>';
+  
+  // === 夫妻宫是否被引动 ===
+  var p5val = selections['p5'] || '';
+  html += '<div class="summary-card">';
+  html += '<div class="summary-card-label">夫妻宫是否被引动</div>';
+  html += '<div class="summary-card-value">' + p5val + '</div>';
+  html += '<div class="summary-card-result">' + (db['夫妻宫是否被引动'][p5val] || '') + '</div>';
+  html += '</div>';
+  
+  // === 夫妻宫坐着谁 ===
+  var p6val = selections['p6'] || '';
+  html += '<div class="summary-card">';
+  html += '<div class="summary-card-label">夫妻宫坐着谁（日支本气）</div>';
+  html += '<div class="summary-card-value">' + p6val + '</div>';
+  html += '<div class="summary-card-result">' + (db['夫妻宫坐着谁'][p6val] || '') + '</div>';
+  html += '</div>';
+  
+  // === 日支藏干的十神 ===
+  var p7val = selections['p7'] || [];
+  if (p7val.length > 0) {
+    html += '<div class="summary-card">';
+    html += '<div class="summary-card-label">日支藏干的十神</div>';
+    for (var i = 0; i < p7val.length; i++) {
+      html += '<div class="summary-card-value">' + p7val[i] + '</div>';
+      html += '<div class="summary-card-result">' + db['日支藏干的十神'][p7val[i]] + '</div>';
+    }
+    html += '</div>';
+  }
+  
+  // === 夫妻星与夫妻宫的喜忌互动 ===
+  var p8val = selections['p8'] || '';
+  html += '<div class="summary-card">';
+  html += '<div class="summary-card-label">夫妻星与夫妻宫的喜忌互动</div>';
+  html += '<div class="summary-card-value">' + p8val + '</div>';
+  html += '<div class="summary-card-result">' + (db['夫妻星与夫妻宫的喜忌互动'][p8val] || '') + '</div>';
+  html += '</div>';
+  
+  // === 全局病根 ===
+  var p9val = selections['p9'] || '';
+  var rootKey = p9val.split('-')[0];
+  var rootShort = p9val.split('-')[1];
+  html += '<div class="summary-card">';
+  html += '<div class="summary-card-label">全局病根与状态 — ' + rootKey + '</div>';
+  html += '<div class="summary-card-value">' + rootShort + '</div>';
+  var rd = db['全局病根'][p9val];
+  html += '<div class="summary-card-result">【状态】' + rd['状态'] + '\n\n【化解方法】\n' + rd['化解'] + '</div>';
+  html += '</div>';
+  
+  // === 婚姻状态（重点优化区域）===
+  var p10val = selections['p10'] || '';
+  html += '<div class="summary-marital-section">';
+  html += '<div class="summary-marital-title">婚姻状态：' + p10val + '</div>';
+  
+  if (p10val === '未婚') {
+    html += '<div class="summary-marital-grid">';
+    
+    html += '<div class="summary-marital-item">';
+    html += '<div class="summary-marital-item-label">夫妻星是否出现</div>';
+    html += '<div class="summary-marital-item-value">夫妻星现身 / 被合出来</div>';
+    html += '<div class="summary-marital-item-desc">伴侣极其想娶你/嫁你，进度极快（可能闪婚）。</div>';
+    html += '</div>';
+    
+    html += '<div class="summary-marital-item">';
+    html += '<div class="summary-marital-item-label">夫妻宫是否被引动</div>';
+    html += '<div class="summary-marital-item-value">被冲 / 被合走 / 合绊 / 被害 / 被刑</div>';
+    html += '<div class="summary-marital-item-desc">被冲=物理分离（分居、冷战）；被合走=伴侣心被外面吸走；合绊=精力被牵制；被害/被刑=冷战内耗。</div>';
+    html += '</div>';
+    
+    html += '<div class="summary-marital-item">';
+    html += '<div class="summary-marital-item-label">夫妻星与夫妻宫互动</div>';
+    html += '<div class="summary-marital-item-value">生/合=快婚；克/冲=痛苦落地难</div>';
+    html += '<div class="summary-marital-item-desc">生/合夫妻宫=伴侣极想结婚，可能闪婚。克/冲夫妻宫=伴侣追你但家里反对或压迫感太强，谈得痛苦落不了地。</div>';
+    html += '</div>';
+    
+    html += '<div class="summary-marital-item">';
+    html += '<div class="summary-marital-item-label">结婚应期</div>';
+    html += '<div class="summary-marital-item-value">大运流年补足喜用神力量</div>';
+    html += '<div class="summary-marital-item-desc">流年带红鸾或天喜，会加大"想恋爱、想成家"的情绪波动。</div>';
+    html += '</div>';
+    
+    html += '</div>';
+  } else if (p10val === '已婚') {
+    html += '<div class="summary-marital-grid">';
+    
+    html += '<div class="summary-marital-item">';
+    html += '<div class="summary-marital-item-label">夫妻星到位</div>';
+    html += '<div class="summary-marital-item-value">夫妻星到位，婚姻成立</div>';
+    html += '</div>';
+    
+    html += '<div class="summary-marital-item">';
+    html += '<div class="summary-marital-item-label">夫妻宫被引动</div>';
+    html += '<div class="summary-marital-item-value">被冲 / 被合走 / 合绊 / 被害 / 被刑</div>';
+    html += '<div class="summary-marital-item-desc">被冲=物理分离（分居、冷战）；被合走=伴侣心被外面吸走；合绊=精力被牵制；被害/被刑=冷战内耗。</div>';
+    html += '</div>';
+    
+    html += '<div class="summary-marital-item">';
+    html += '<div class="summary-marital-item-label">离婚应期</div>';
+    html += '<div class="summary-marital-item-value">夫妻星被克/合走 / 夫妻宫逢冲 / 忌神加力</div>';
+    html += '<div class="summary-marital-item-desc">夫妻星被克或合走=纽带断了；夫妻宫逢冲=突然破裂或剧烈冲突；忌神加力=对婚姻极度厌烦，主动想离。</div>';
+    html += '</div>';
+    
+    html += '</div>';
+  } else if (p10val === '离婚') {
+    html += '<div class="summary-marital-grid">';
+    
+    html += '<div class="summary-marital-item">';
+    html += '<div class="summary-marital-item-label">离婚应期</div>';
+    html += '<div class="summary-marital-item-value">夫妻星被克/合走 / 夫妻宫逢冲 / 忌神加力</div>';
+    html += '<div class="summary-marital-item-desc">夫妻星被克或合走=纽带断了；夫妻宫逢冲=突然破裂或剧烈冲突；忌神加力=对婚姻极度厌烦，主动想离。</div>';
+    html += '</div>';
+    
+    html += '<div class="summary-marital-item">';
+    html += '<div class="summary-marital-item-label">离婚后状态</div>';
+    html += '<div class="summary-marital-item-value">忌神再来 / 克制忌神 / 夫妻宫为忌</div>';
+    html += '<div class="summary-marital-item-desc">忌神再来=前夫纠缠或心理创伤复发；克制忌神=彻底走出来；夫妻宫为忌=财产分割、抚养权撕逼。</div>';
+    html += '</div>';
+    
+    html += '</div>';
+  }
+  
+  html += '</div>'; // end marital-section
+  
+  document.getElementById('summaryContent').innerHTML = html;
+  document.getElementById('summarySubtitle').textContent = '性别：' + gender + ' | 共 11 步分析完成';
+  updateProgress();
+  window.scrollTo(0, 0);
+}
+
+function restart() {
+  selections = {};
+  currentPage = 0;
+  var pages = document.querySelectorAll('.page');
+  for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
+  document.getElementById('summaryPage').classList.remove('active');
+  document.getElementById('page0').classList.add('active');
+  // Clear all selections
+  var items = document.querySelectorAll('.option-item');
+  for (var i = 0; i < items.length; i++) items[i].classList.remove('selected');
+  var boxes = document.querySelectorAll('.result-box');
+  for (var i = 0; i < boxes.length; i++) boxes[i].style.display = 'none';
+  updateProgress();
+  window.scrollTo(0, 0);
+}
+
+updateProgress();
+</script>
+</body>
+</html>
