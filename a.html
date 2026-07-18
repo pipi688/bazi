@@ -1,8 +1,625 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>hhhh</title>
+<title>八字十神性格分析</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: #f5f5f5;
+  color: #333;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+/* 进度条 */
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: #4a90d9;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+.progress-text {
+  text-align: right;
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 20px;
+}
+
+/* 卡片 */
+.card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 32px 28px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+}
+
+/* 标题 */
+h1 { font-size: 24px; margin-bottom: 8px; color: #222; }
+h2 { font-size: 20px; margin-bottom: 6px; color: #333; }
+h3 { font-size: 16px; margin-bottom: 16px; color: #555; font-weight: 500; }
+.subtitle { font-size: 14px; color: #888; margin-bottom: 24px; }
+
+/* 选项组 */
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option-btn {
+  display: block;
+  width: 100%;
+  padding: 12px 18px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 15px;
+  color: #333;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+.option-btn:hover { border-color: #4a90d9; background: #f0f6ff; }
+.option-btn.selected { border-color: #4a90d9; background: #e8f0fe; color: #1a6dc0; font-weight: 500; }
+
+/* 多选提示 */
+.multi-hint { font-size: 13px; color: #888; margin-bottom: 12px; }
+
+/* 导航按钮 */
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 28px;
+  gap: 12px;
+}
+.btn {
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #333;
+  transition: all 0.15s ease;
+}
+.btn:hover { background: #f5f5f5; }
+.btn-primary { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+.btn-primary:hover { background: #3a7bc8; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* 结果页 */
+.result-section { margin-bottom: 24px; }
+.result-section h3 { font-size: 16px; color: #333; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+.info-row { display: flex; padding: 8px 0; border-bottom: 1px solid #f5f5f5; }
+.info-label { width: 140px; color: #888; font-size: 14px; }
+.info-value { font-size: 14px; color: #333; font-weight: 500; }
+
+/* 统计卡片 */
+.stat-cards { display: flex; gap: 12px; margin-bottom: 20px; }
+.stat-card {
+  flex: 1;
+  padding: 16px 12px;
+  border-radius: 8px;
+  text-align: center;
+}
+.stat-card.blue { background: #e8f0fe; }
+.stat-card.orange { background: #fff3e0; }
+.stat-card.green { background: #e8f5e9; }
+.stat-card .num { font-size: 28px; font-weight: 600; }
+.stat-card .label { font-size: 13px; color: #666; margin-top: 4px; }
+
+/* 汇总表格 */
+.summary-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.summary-table th { background: #f5f5f5; padding: 10px 12px; text-align: left; font-weight: 500; color: #555; border-bottom: 1px solid #e0e0e0; }
+.summary-table td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.tag-green { background: #e8f5e9; color: #2e7d32; }
+.tag-red { background: #fce4ec; color: #c62828; }
+.tag-blue { background: #e8f0fe; color: #1565c0; }
+.tag-gray { background: #f5f5f5; color: #888; }
+
+/* 分析文本 */
+.analysis-text { font-size: 14px; color: #444; line-height: 1.8; padding: 12px 0; }
+
+/* 欢迎页 */
+.welcome { text-align: center; padding: 60px 20px; }
+.welcome p { color: #666; font-size: 15px; margin-bottom: 32px; max-width: 480px; margin-left: auto; margin-right: auto; }
+
+/* 隐藏 */
+.hidden { display: none; }
+
+/* 十神选项网格 - 多选 */
+.option-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.option-chip {
+  padding: 10px 18px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.option-chip:hover { border-color: #4a90d9; background: #f0f6ff; }
+.option-chip.selected { border-color: #4a90d9; background: #e8f0fe; color: #1a6dc0; font-weight: 500; }
+
+/* 子问题区域 */
+.sub-question { margin-top: 20px; padding-top: 20px; border-top: 1px dashed #ddd; }
+.sub-question-title { font-size: 15px; font-weight: 500; color: #444; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<div class="container" id="app">
+
+  <!-- 欢迎页 -->
+  <div class="card welcome" id="page-welcome">
+    <h1>八字十神性格分析</h1>
+    <p>通过一系列选择题，逐步分析您的八字格局、五行属性和十神喜忌，最终生成专属的性格分析报告。</p>
+    <button class="btn btn-primary" onclick="startTest()" style="padding: 12px 40px; font-size: 16px;">开始测试</button>
+  </div>
+
+  <!-- 答题页 -->
+  <div class="card hidden" id="page-question">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text" id="progressText"></div>
+    <h2 id="questionTitle"></h2>
+    <h3 id="questionSubtitle" class="subtitle"></h3>
+    <div id="questionBody"></div>
+    <div class="nav-buttons">
+      <button class="btn" id="btnPrev" onclick="prevQuestion()">上一题</button>
+      <button class="btn btn-primary" id="btnNext" onclick="nextQuestion()">下一题</button>
+    </div>
+  </div>
+
+  <!-- 结果页 -->
+  <div class="card hidden" id="page-result">
+    <h1 style="text-align:center; margin-bottom: 6px;">分析报告</h1>
+    <p style="text-align:center; color:#888; font-size:14px; margin-bottom: 28px;">以下是根据您的选择生成的完整分析结果</p>
+    <div id="resultBody"></div>
+    <div style="text-align:center; margin-top: 32px;">
+      <button class="btn btn-primary" onclick="restartTest()" style="padding: 10px 36px;">重新测试</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ========== 题目配置 ==========
+const TOTAL_ELEMENTS = ["木", "火", "土", "金", "水"];
+const TIANGAN_MAP = {
+  "木": ["甲木", "乙木"],
+  "火": ["丙火", "丁火"],
+  "土": ["戊土", "己土"],
+  "金": ["庚金", "辛金"],
+  "水": ["壬水", "癸水"]
+};
+const SHISHEN_LIST = ["正官", "七杀", "正印", "偏印", "正财", "偏财", "食神", "伤官", "比肩", "劫财"];
+
+// 从文档中提取的十神喜忌分析文本
+const SHISHEN_ANALYSIS = {
+  "身强_伤官为喜": "思维极具穿透力，不盲从权威，拥有打破常规的胆识与重塑局面的能力；他们的才华往往带着冲击力，自带极强的个人磁场与感染力。",
+  "身强_伤官为忌": "习惯用尖锐的言辞建立心理优越感；在过度张扬锋芒的同时，容易切断外部的助力，陷入自我孤立的境地。",
+  "身强_正官为喜": "拥有极强的自我管理能力与底线思维；他们不盲从外界规则，而是将规则内化为自身的行为准则，因此在群体中天然具备威信，能以身作则地带领团队。",
+  "身强_正官为忌": "对‘正确与秩序’有强迫性的追求，导致边界感过度扩张；习惯用自己的标准去衡量和干预他人，看似是负责任，实则压抑了周围人的自主空间，让人感到窒息。",
+  "身强_七杀为喜": "拥有极强的危机管理能力与决断力；面对困难不仅不退缩，反而能激发出巨大的潜能。他们习惯在高压和不确定性中掌控全局，是天生的‘危机驾驭者’。",
+  "身强_七杀为忌": "对’力量与掌控‘有过度执念，习惯用零和博弈的思维处理问题；缺乏柔性沟通的智慧，容易将正常的意见分歧升级为破坏性的冲突，导致周围人产生强烈的疏离感。",
+  "身强_比肩为喜": "拥有极强的自我内核与独立担当的能力，不依赖外力；在团队中能发挥极强的稳定作用，利益面前不独吞，能够以平等的姿态带领众人前行，是值得托付的独立核心。",
+  "身强_比肩为忌": "对自身的经验与判断力极度盲目，缺乏倾听与共情的能力；在群体中容易形成排他性的壁垒，因过度坚持己见而切断了外部资源的流入，最终陷入孤芳自赏的僵局。",
+  "身强_劫财为喜": "行动力极其彪悍，带有天然的开拓气场；在竞争中敢于下重注，且拥有极强的资源掠夺与重组能力。虽然性格强势，但对认定的圈子有着极高的义气与忠诚度。",
+  "身强_劫财为忌": "对’赢‘和‘面子’有病态的执念，导致人际边界感极度模糊；容易为了争夺资源而采取过于激进的手段，在无意义的消耗战中，透支自己长期积累的人脉与底蕴。",
+  "身强_正印为喜": "深谙‘站对位置’的智慧，看似不争不抢，实则总能精准链接到优质的资源或长辈庇护；内心自洽，不轻易内耗，在充满不确定性的环境中，总能找到最安全、最稳妥的着陆点。",
+  "身强_正印为忌": "内心承受着巨大的无形压力（往往是道德感或长辈的期望），导致在面临人生选择时‘行动力瘫痪’。习惯用‘顺从’或‘依赖’来逃避承担独立生存的责任，看似是被保护，实则自我成长的空间被彻底锁死。",
+  "身强_偏印为喜": "不热衷无效社交，习惯保持高度独立的精神空间；往往在某个冷门、垂直或前沿的领域有着极深的积淀。平时不显山露水，关键时刻总能凭借独特的直觉或冷门技能实现弯道超车。",
+  "身强_偏印为忌": "内心极度缺乏安全感，对外界的人和事呈现出‘防御性敏感’；容易捕捉到微小的细节并陷入过度思虑，精神内耗严重。为了规避潜在的未知风险，往往会下意识地选择自我封闭或社交退缩，活在自己构建的安全壳里。",
+  "身强_正财为喜": "对物质有清晰的边界感，深知自己精力有限，不盲目跟风冒险；靠稳扎稳打和细水长流来累积安全感，属于能过好小日子、拥有‘小确幸’的人。",
+  "身强_正财为忌": "内心极度渴望稳定，但承载力不足，导致严重的‘抓取焦虑’；越是想要控制财务，越容易在决策上畏手畏脚，陷入‘越省越穷、越穷越省’的低效内耗循环。",
+  "身强_偏财为喜": "自身不具备强攻能力，但总有‘贵人缘’或‘意外之喜’；不执着于硬拼，总能在不经意间捕捉到时代的红利或偏门的机会，知足常乐，小富即安。",
+  "身强_偏财为忌": "欲望远大于自身承载力，容易陷入‘虚假繁荣’的陷阱；为了维持外在的面子或抓住不切实际的机会，不惜透支未来的信用，长期处于高负债的紧绷与恐慌状态。",
+  "身强_食神为喜": "内心世界极其丰富，拥有独特的审美与感知力；在绝对安全的环境里，展现出极高的幽默感与才情，但在陌生或高压环境中，倾向于收敛锋芒，默默观察。",
+  "身强_食神为忌": "面对现实压力时，容易切断与外界的连接，用丰富的内心戏构建心理避风港；对负面评价的承受力极弱，习惯用沉默、拖延或退却来应对挑战，而非正面解决。",
+  "身弱_伤官为喜": "拥有极高的灵气与洞察力，总能捕捉到别人忽略的细节与漏洞；但因为自身承载力的局限，这种锋芒容易过早消耗自身的精力，甚至无意中招致人际摩擦。",
+  "身弱_伤官为忌": "因为内心极度缺乏安全感，所以将‘挑剔与刻薄’作为防御机制；看似尖锐不好惹，实则是用攻击性的外衣，来掩饰内在的无力、惶恐与不堪一击。",
+  "身弱_正官为喜": "极具责任感与分寸感，懂得在规则框架内寻找最大的安全感；虽然缺乏大开大合的魄力，但胜在稳定、靠谱、不逾矩，是任何体系中最不可或缺的基石力量。",
+  "身弱_正官为忌": "对外部的评价、规矩和权威产生了过度敬畏；做任何事都怕出错，导致行动力严重瘫痪。他们不是没有想法，而是被无形的规则绳索捆绑，陷入了深度的自我怀疑与拘谨中。",
+  "身弱_七杀为喜": "内心或许向往安逸，但现实的磨砺逼出了他们极强的承压底座；越打压越能展现出惊人的韧性，能在极其严苛的环境中，硬生生扛出一条生路。",
+  "身弱_七杀为忌": "对潜在的风险和威胁具有‘灾难化想象’；长期处于高度紧绷的防御状态，精神内耗极大。因为觉得自己无力应对外界的压力，往往采取逃避或过度妥协的姿态，活得极其疲惫。",
+  "身弱_比肩为喜": "深谙‘同行互助’的智慧，不盲目追求单打独斗；在群体中保持着极其舒适的社交边界，不争抢风头，但总能通过顺势而为，稳稳分得属于自己的那份资源与安全感。",
+  "身弱_比肩为忌": "明明承载力不足，却出于防卫性的自尊，拒绝一切实质性的外援；习惯性地把所有压力扛在肩上，用‘苦劳’代替‘功劳’，最终陷入深深的疲惫与无效的内耗中。",
+  "身弱_劫财为喜": "极其善于识别并依附有实力的平台或个人；虽然缺乏顶层的战略视野，但作为一线的攻坚手，执行力极强，不挑活不抱怨，是体系中最可靠的‘先锋将’。",
+  "身弱_劫财为忌": "内心极度渴望赢，但实力无法匹配欲望；容易用言语上的锋利来掩饰行动上的怯懦。在复杂的利益博弈中，因为急于证明自己，容易采取短视的、甚至损人不利己的防御性手段。",
+  "身弱_正印为喜": "你坚守的传统价值观或保护伞（如好领导、好家庭）被无情碾碎。你不会哭，你的怒火变成一个极其固执的‘原教旨主义者’，逢人便控诉这个世界的不公。",
+  "身弱_偏印为喜": "不热衷无效社交，习惯保持高度独立的精神空间；往往在某个冷门、垂直或前沿的领域有着极深的积淀。平时不显山露水，关键时刻总能凭借独特的直觉或冷门技能实现弯道超车。",
+  "身弱_偏印为忌": "内心极度缺乏安全感，对外界的人和事呈现出‘防御性敏感’；容易捕捉到微小的细节并陷入过度思虑，精神内耗严重。为了规避潜在的未知风险，往往会下意识地选择自我封闭或社交退缩，活在自己构建的安全壳里。",
+  "身弱_正财为喜": "对物质有清晰的边界感，深知自己精力有限，不盲目跟风冒险；靠稳扎稳打和细水长流来累积安全感，属于能过好小日子、拥有‘小确幸’的人。",
+  "身弱_正财为忌": "内心极度渴望稳定，但承载力不足，导致严重的‘抓取焦虑’；越是想要控制财务，越容易在决策上畏手畏脚，陷入‘越省越穷、越穷越省’的低效内耗循环。",
+  "身弱_偏财为喜": "自身不具备强攻能力，但总有‘贵人缘’或‘意外之喜’；不执着于硬拼，总能在不经意间捕捉到时代的红利或偏门的机会，知足常乐，小富即安。",
+  "身弱_偏财为忌": "欲望远大于自身承载力，容易陷入‘虚假繁荣’的陷阱；为了维持外在的面子或抓住不切实际的机会，不惜透支未来的信用，长期处于高负债的紧绷与恐慌状态。",
+  "身弱_食神为喜": "内心世界极其丰富，拥有独特的审美与感知力；在绝对安全的环境里，展现出极高的幽默感与才情，但在陌生或高压环境中，倾向于收敛锋芒，默默观察。",
+  "身弱_食神为忌": "面对现实压力时，容易切断与外界的连接，用丰富的内心戏构建心理避风港；对负面评价的承受力极弱，习惯用沉默、拖延或退却来应对挑战，而非正面解决。"
+};
+
+// ========== 状态 ==========
+let answers = {};
+let currentQuestion = 0;
+
+// 题目列表 - 每个题目是一个对象
+function buildQuestions() {
+  const q = [];
+
+  // Q1: 性别
+  q.push({
+    id: "gender",
+    title: "您的性别是？",
+    type: "radio",
+    options: ["男", "女"]
+  });
+
+  // Q2: 五行属性
+  q.push({
+    id: "wuxing",
+    title: "您的日主五行属性是什么？",
+    subtitle: "即八字中日柱天干的五行属性",
+    type: "radio",
+    options: TOTAL_ELEMENTS
+  });
+
+  // Q3: 五行旺弱
+  q.push({
+    id: "wuxingStrength",
+    title: "您的日主五行是偏旺还是偏弱？",
+    subtitle: "根据八字中该五行的数量与得令情况判断",
+    type: "radio",
+    options: ["太旺", "太弱"]
+  });
+
+  // Q4: 五行本性（天干）
+  q.push({
+    id: "tiangan",
+    title: "您的具体天干是什么？",
+    subtitle: "根据五行属性自动筛选",
+    type: "radio",
+    options: [], // 动态填充
+    dynamic: true
+  });
+
+  // Q5: 身强身弱
+  q.push({
+    id: "bodyStrength",
+    title: "您的八字格局属于？",
+    type: "radio",
+    options: ["身强", "身弱"]
+  });
+
+  // Q6: 最旺十神
+  q.push({
+    id: "topShishen",
+    title: "您八字中最旺的十神是哪一个？",
+    type: "radio",
+    options: SHISHEN_LIST
+  });
+
+  // Q7: 十神喜忌
+  q.push({
+    id: "shishenXiji",
+    title: "该十神在您的八字中为喜还是为忌？",
+    subtitle: "根据身强身弱及十神旺衰综合判断",
+    type: "radio",
+    options: ["为喜", "为忌"]
+  });
+
+  // Q8-12: 冲/合/刑/害/合绊
+  const interactions = [
+    { id: "chong", label: "被冲" },
+    { id: "he", label: "被合" },
+    { id: "xing", label: "被刑" },
+    { id: "hai", label: "被害" },
+    { id: "heban", label: "被合绊" }
+  ];
+
+  interactions.forEach(item => {
+    // 多选题：哪些十神被XX
+    q.push({
+      id: item.id + "_shishen",
+      title: "哪些十神" + item.label + "？",
+      subtitle: "可多选，若无则直接跳过",
+      type: "checkbox",
+      options: SHISHEN_LIST
+    });
+    // 单选题：被XX的十神是喜神还是忌神
+    q.push({
+      id: item.id + "_xiji",
+      title: "被" + item.label.replace("被", "") + "的十神是喜神还是忌神？",
+      subtitle: "针对上面选择的十神进行判断",
+      type: "radio",
+      options: ["喜神", "忌神"],
+      dependsOn: item.id + "_shishen"
+    });
+  });
+
+  return q;
+}
+
+let questions = [];
+
+// ========== 核心逻辑 ==========
+function startTest() {
+  questions = buildQuestions();
+  currentQuestion = 0;
+  answers = {};
+  showPage("page-question");
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[currentQuestion];
+
+  // 动态填充天干选项
+  if (q.dynamic && q.id === "tiangan") {
+    const wx = answers["wuxing"];
+    q.options = TIANGAN_MAP[wx] || [];
+  }
+
+  // 更新进度
+  const totalQ = questions.length;
+  const pct = ((currentQuestion + 1) / totalQ * 100).toFixed(0);
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("progressText").textContent = "第 " + (currentQuestion + 1) + " 题 / 共 " + totalQ + " 题";
+
+  // 设置标题
+  document.getElementById("questionTitle").textContent = q.title;
+  document.getElementById("questionSubtitle").textContent = q.subtitle || "";
+
+  // 渲染选项
+  const body = document.getElementById("questionBody");
+  let html = "";
+
+  if (q.type === "radio") {
+    html = '<div class="options">';
+    q.options.forEach((opt, i) => {
+      const sel = answers[q.id] === opt ? " selected" : "";
+      html += '<button class="option-btn' + sel + '" onclick="selectRadio(\'' + q.id + '\', this, \'' + opt + '\')">' + opt + '</button>';
+    });
+    html += '</div>';
+  } else if (q.type === "checkbox") {
+    const selected = answers[q.id] || [];
+    html = '<div class="multi-hint">（可多选，点击已选中的可取消）</div>';
+    html += '<div class="option-grid">';
+    q.options.forEach((opt, i) => {
+      const sel = selected.includes(opt) ? " selected" : "";
+      html += '<button class="option-chip' + sel + '" onclick="selectCheckbox(\'' + q.id + '\', this, \'' + opt + '\')">' + opt + '</button>';
+    });
+    html += '</div>';
+  }
+
+  body.innerHTML = html;
+
+  // 更新按钮状态
+  document.getElementById("btnPrev").disabled = currentQuestion === 0;
+
+  const nextBtn = document.getElementById("btnNext");
+  if (currentQuestion === questions.length - 1) {
+    nextBtn.textContent = "查看结果";
+  } else {
+    nextBtn.textContent = "下一题";
+  }
+
+  // 依赖题逻辑：如果依赖的上一题未作答，隐藏本题
+  if (q.dependsOn) {
+    const depVal = answers[q.dependsOn];
+    if (!depVal || (Array.isArray(depVal) && depVal.length === 0)) {
+      // 如果依赖题为空，自动跳过本题（先渲染但提示用户）
+      // 不做隐藏，让用户能选"上一题"回去
+    }
+  }
+}
+
+function selectRadio(qId, btnEl, value) {
+  // 清除同组选中
+  const parent = btnEl.parentElement;
+  parent.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected"));
+  btnEl.classList.add("selected");
+  answers[qId] = value;
+}
+
+function selectCheckbox(qId, btnEl, value) {
+  if (!answers[qId]) answers[qId] = [];
+  const arr = answers[qId];
+  const idx = arr.indexOf(value);
+  if (idx >= 0) {
+    arr.splice(idx, 1);
+    btnEl.classList.remove("selected");
+  } else {
+    arr.push(value);
+    btnEl.classList.add("selected");
+  }
+  // 触发更新
+  answers[qId] = [...arr];
+}
+
+function nextQuestion() {
+  const q = questions[currentQuestion];
+
+  // 验证
+  if (q.type === "radio" && !answers[q.id]) {
+    alert("请先选择一个选项");
+    return;
+  }
+  if (q.type === "checkbox") {
+    if (!answers[q.id] || answers[q.id].length === 0) {
+      // 允许跳过多选题
+    }
+  }
+
+  if (currentQuestion < questions.length - 1) {
+    currentQuestion++;
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function prevQuestion() {
+  if (currentQuestion > 0) {
+    currentQuestion--;
+    renderQuestion();
+  }
+}
+
+// ========== 结果页 ==========
+function showResult() {
+  showPage("page-result");
+  const body = document.getElementById("resultBody");
+
+  const gender = answers["gender"] || "-";
+  const wuxing = answers["wuxing"] || "-";
+  const wuxingStrength = answers["wuxingStrength"] || "-";
+  const tiangan = answers["tiangan"] || "-";
+  const bodyStr = answers["bodyStrength"] || "-";
+  const topShishen = answers["topShishen"] || "-";
+  const shishenXiji = answers["shishenXiji"] || "-";
+
+  // 统计喜忌
+  let xiCount = 0, jiCount = 0;
+  ["chong_xiji", "he_xiji", "xing_xiji", "hai_xiji", "heban_xiji"].forEach(key => {
+    const v = answers[key];
+    if (v === "喜神") xiCount++;
+    if (v === "忌神") jiCount++;
+  });
+
+  // 获取十神分析文本
+  const analysisKey = bodyStr + "_" + topShishen + shishenXiji;
+  const analysisText = SHISHEN_ANALYSIS[analysisKey] || "暂无对应分析。";
+
+  // 交互数据
+  const interactions = [
+    { id: "chong", label: "被冲" },
+    { id: "he", label: "被合" },
+    { id: "xing", label: "被刑" },
+    { id: "hai", label: "被害" },
+    { id: "heban", label: "被合绊" }
+  ];
+
+  let html = "";
+
+  // 基本信息
+  html += '<div class="result-section">';
+  html += '<h3>基本信息</h3>';
+  html += '<div class="info-row"><div class="info-label">性别</div><div class="info-value">' + gender + '</div></div>';
+  html += '<div class="info-row"><div class="info-label">日主五行</div><div class="info-value">' + wuxing + '（' + wuxingStrength + '）</div></div>';
+  html += '<div class="info-row"><div class="info-label">天干</div><div class="info-value">' + tiangan + '</div></div>';
+  html += '<div class="info-row"><div class="info-label">格局</div><div class="info-value">' + bodyStr + '</div></div>';
+  html += '</div>';
+
+  // 十神分析
+  html += '<div class="result-section">';
+  html += '<h3>最旺十神分析</h3>';
+  html += '<div class="info-row"><div class="info-label">最旺十神</div><div class="info-value">' + topShishen + '</div></div>';
+  html += '<div class="info-row"><div class="info-label">喜忌判断</div><div class="info-value"><span class="tag ' + (shishenXiji === "为喜" ? "tag-green" : "tag-red") + '">' + shishenXiji + '</span></div></div>';
+  html += '<div class="analysis-text">' + analysisText + '</div>';
+  html += '</div>';
+
+  // 五行相互作用
+  html += '<div class="result-section">';
+  html += '<h3>五行相互作用</h3>';
+
+  interactions.forEach(item => {
+    const shishenKey = item.id + "_shishen";
+    const xijiKey = item.id + "_xiji";
+    const shishenArr = answers[shishenKey] || [];
+    const xijiVal = answers[xijiKey] || "-";
+
+    html += '<div style="margin-bottom: 16px;">';
+    html += '<div style="font-weight: 500; font-size: 14px; color: #444; margin-bottom: 4px;">' + item.label + '</div>';
+    html += '<div style="font-size: 13px; color: #666;">';
+    if (shishenArr.length > 0) {
+      html += '十神：' + shishenArr.join("、") + '；判定：<span class="tag ' + (xijiVal === "喜神" ? "tag-green" : "tag-red") + '">' + xijiVal + '</span>';
+    } else {
+      html += '<span style="color:#bbb;">无</span>';
+    }
+    html += '</div></div>';
+  });
+
+  html += '</div>';
+
+  // 汇总表
+  html += '<div class="result-section">';
+  html += '<h3>综合汇总</h3>';
+  html += '<table class="summary-table">';
+  html += '<thead><tr><th>项目</th><th>详情</th><th>喜忌</th></tr></thead><tbody>';
+
+  // 最旺十神行
+  html += '<tr><td>最旺十神</td><td>' + topShishen + '</td><td><span class="tag ' + (shishenXiji === "为喜" ? "tag-green" : "tag-red") + '">' + shishenXiji + '</span></td></tr>';
+
+  interactions.forEach(item => {
+    const shishenArr = answers[item.id + "_shishen"] || [];
+    const xijiVal = answers[item.id + "_xiji"] || "";
+    if (shishenArr.length > 0) {
+      html += '<tr><td>' + item.label + '</td><td>' + shishenArr.join("、") + '</td><td><span class="tag ' + (xijiVal === "喜神" ? "tag-green" : "tag-red") + '">' + xijiVal + '</span></td></tr>';
+    }
+  });
+
+  html += '</tbody></table></div>';
+
+  // 统计
+  html += '<div class="result-section">';
+  html += '<h3>统计概览</h3>';
+  html += '<div class="stat-cards">';
+  html += '<div class="stat-card blue"><div class="num">' + (xiCount + (shishenXiji === "为喜" ? 1 : 0)) + '</div><div class="label">喜神项</div></div>';
+  html += '<div class="stat-card orange"><div class="num">' + (jiCount + (shishenXiji === "为忌" ? 1 : 0)) + '</div><div class="label">忌神项</div></div>';
+  html += '<div class="stat-card green"><div class="num">' + interactions.filter(i => (!answers[i.id + "_shishen"] || answers[i.id + "_shishen"].length === 0)).length + '</div><div class="label">无相互作用项</div></div>';
+  html += '</div></div>';
+
+  body.innerHTML = html;
+}
+
+function restartTest() {
+  answers = {};
+  currentQuestion = 0;
+  showPage("page-welcome");
+}
+
+function showPage(id) {
+  ["page-welcome", "page-question", "page-result"].forEach(p => {
+    document.getElementById(p).classList.add("hidden");
+  });
+  document.getElementById(id).classList.remove("hidden");
+}
+
+// 键盘快捷键
+document.addEventListener("keydown", function(e) {
+  if (document.getElementById("page-question").classList.contains("hidden")) return;
+
+  const q = questions[currentQuestion];
+  if (e.key === "ArrowRight" || e.key === "Enter") {
+    e.preventDefault();
+    nextQuestion();
+  } else if (e.key === "ArrowLeft") {
+    e.preventDefault();
+    prevQuestion();
+  } else if (q && q.type === "radio" && /^[1-9]$/.test(e.key)) {
+    const idx = parseInt(e.key) - 1;
+    if (idx < q.options.length) {
+      answers[q.id] = q.options[idx];
+      renderQuestion();
+    }
+  }
+});
+</script>
+
+</body>
 </html>
