@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>财富分析测试</title>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f5f5; color: #333; font-size: 15px; line-height: 1.7; }
+.container { max-width: 720px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+.page { display: none; }
+.page.active { display: block; }
+h1 { font-size: 22px; font-weight: 600; text-align: center; margin-bottom: 12px; color: #1a1a1a; }
+h2 { font-size: 17px; font-weight: 600; margin-bottom: 16px; color: #1a1a1a; text-align: center; }
+.desc { text-align: center; color: #666; margin-bottom: 28px; font-size: 14px; }
+.progress { display: flex; align-items: center; margin-bottom: 24px; gap: 10px; }
+.progress-bar { flex: 1; height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: #333; border-radius: 3px; transition: width 0.3s; }
+.progress-text { font-size: 12px; color: #999; white-space: nowrap; }
+.options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+.option { display: flex; align-items: center; padding: 12px 16px; background: #fff; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; transition: all 0.15s; user-select: none; }
+.option:hover { border-color: #999; }
+.option.selected { border-color: #333; background: #f0f0f0; }
+.option input { margin-right: 10px; accent-color: #333; }
+.option label { cursor: pointer; flex: 1; }
+.btn-row { display: flex; justify-content: space-between; gap: 12px; }
+.btn { padding: 10px 24px; border: 1px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 14px; transition: all 0.15s; }
+.btn:hover { background: #f0f0f0; }
+.btn-primary { background: #333; color: #fff; border-color: #333; }
+.btn-primary:hover { background: #555; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.info-box { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+.info-row { display: flex; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+.info-row:last-child { border-bottom: none; }
+.info-label { width: 140px; color: #666; font-size: 14px; flex-shrink: 0; }
+.info-value { font-weight: 500; font-size: 14px; }
+.result-section { margin-bottom: 24px; }
+.result-section h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #eee; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: #f5f5f5; padding: 8px 10px; text-align: left; font-weight: 500; border: 1px solid #e0e0e0; }
+td { padding: 8px 10px; border: 1px solid #e0e0e0; vertical-align: top; }
+tr:nth-child(even) { background: #fafafa; }
+.tag { display: inline-block; padding: 1px 8px; border-radius: 3px; font-size: 12px; }
+.tag-yes { background: #e8f5e9; color: #2e7d32; }
+.tag-no { background: #fce4ec; color: #c62828; }
+.tag-info { background: #e3f2fd; color: #1565c0; }
+.text-small { font-size: 13px; color: #555; line-height: 1.8; }
+</style>
+</head>
+<body>
+
+<div class="container" id="app">
+
+  <!-- Page 0: Welcome -->
+  <div class="page active" id="page-welcome">
+    <h1>财富分析测试</h1>
+    <p class="desc">请根据您的八字信息，依次回答以下问题，系统将在最后为您生成完整的财富分析报告。</p>
+    <div style="text-align:center; margin-top: 30px;">
+      <button class="btn btn-primary" id="btn-start" style="padding: 12px 48px; font-size: 16px;">开始测试</button>
+    </div>
+  </div>
+
+  <!-- Question pages -->
+  <div class="page" id="page-question">
+    <div class="progress">
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <span class="progress-text" id="progress-text"></span>
+    </div>
+    <h2 id="question-title"></h2>
+    <div class="options" id="question-options"></div>
+    <div class="btn-row">
+      <button class="btn" id="btn-prev">上一题</button>
+      <button class="btn btn-primary" id="btn-next">下一题</button>
+    </div>
+  </div>
+
+  <!-- Result page -->
+  <div class="page" id="page-result">
+    <h1 style="margin-bottom: 24px;">财富分析报告</h1>
+    <div id="result-content"></div>
+    <div style="text-align:center; margin-top: 30px;">
+      <button class="btn" id="btn-restart">重新测试</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+$(function() {
+
+  // ========== Question Data (10 questions) ==========
+  var questions = [
+    {
+      id: 'q_has_caixing',
+      title: '原局有没有财星',
+      type: 'single',
+      options: [
+        { value: '有财星', text: '有财星' },
+        { value: '无财星', text: '无财星' }
+      ]
+    },
+    {
+      id: 'q_caixing_type',
+      title: '财星类型',
+      type: 'single',
+      dependsOn: 'q_has_caixing',
+      dependsValue: '有财星',
+      options: [
+        { value: '正财', text: '正财' },
+        { value: '偏财', text: '偏财' }
+      ]
+    },
+    {
+      id: 'q_shen_qiang_ruo',
+      title: '身强身弱',
+      type: 'single',
+      options: [
+        { value: '身强', text: '身强' },
+        { value: '身弱', text: '身弱' }
+      ]
+    },
+    {
+      id: 'q_caixing_xi_ji',
+      title: '财星是喜是忌',
+      type: 'single',
+      options: [
+        { value: '喜神', text: '喜神' },
+        { value: '忌神', text: '忌神' }
+      ]
+    },
+    {
+      id: 'q_caixing_wang_shuai',
+      title: '财星旺衰',
+      type: 'single',
+      options: [
+        { value: '财星旺', text: '财星旺' },
+        { value: '财星弱', text: '财星弱' },
+        { value: '财星极旺', text: '财星极旺' }
+      ]
+    },
+    {
+      id: 'q_shen_cai_jiaoliang',
+      title: '身与财的较量',
+      type: 'single',
+      options: [
+        { value: '身强+财星旺+喜神', text: '身强 + 财星旺 + 喜神' },
+        { value: '身强+财星旺+忌神', text: '身强 + 财星旺 + 忌神' },
+        { value: '身强+财星弱+喜神', text: '身强 + 财星弱 + 喜神' },
+        { value: '身强+财星弱+忌神', text: '身强 + 财星弱 + 忌神' },
+        { value: '身弱+财星旺+喜神', text: '身弱 + 财星旺 + 喜神' },
+        { value: '身弱+财星旺+忌神', text: '身弱 + 财星旺 + 忌神' },
+        { value: '身弱+财星弱+喜神', text: '身弱 + 财星弱 + 喜神' },
+        { value: '身弱+财星弱+忌神', text: '身弱 + 财星弱 + 忌神' }
+      ]
+    },
+    {
+      id: 'q_has_shishang',
+      title: '有没有生财源头（食伤）',
+      type: 'single',
+      options: [
+        { value: '有食伤_财旺', text: '有食伤 + 财星旺' },
+        { value: '有食伤_财弱', text: '有食伤 + 财星弱' },
+        { value: '无食伤', text: '无食伤' }
+      ]
+    },
+    {
+      id: 'q_baobiao',
+      title: '财星有没有保镖（多选）',
+      type: 'multi',
+      options: [
+        { value: '有保镖', text: '有保镖' },
+        { value: '无保镖_比劫', text: '无保镖（比劫夺财）' },
+        { value: '无保镖_印耗', text: '无保镖（印耗财）' }
+      ]
+    },
+    {
+      id: 'q_caiku',
+      title: '有没有财库',
+      type: 'single',
+      options: [
+        { value: '有财库', text: '有财库' },
+        { value: '没有财库', text: '没有财库' }
+      ]
+    },
+    {
+      id: 'q_caiku_yindong',
+      title: '命局的财库有没有被引动',
+      type: 'single',
+      dependsOn: 'q_caiku',
+      dependsValue: '有财库',
+      options: [
+        { value: '财库无损', text: '财库无损' },
+        { value: '财库被冲被害被刑', text: '财库被冲/被害/被刑' },
+        { value: '财库不开', text: '财库不开' }
+      ]
+    }
+  ];
+
+  // ========== Analysis Text ==========
+  var analysisText = {
+    '有财星': '正财：现金流 / 固定资产 / 硬劳动（工资、提成、店铺租金、按部就班的积蓄）\n偏财：资产溢价 / 杠杆 / 资本运作 / 机遇（股票、拆迁、风投、奖金、突然的暴利）',
+    '无财星': '不直接跟钱打交道，而是通过"本事、名望、关系、平台"来变现',
+
+    '正财': '正财：现金流 / 固定资产 / 硬劳动（工资、提成、店铺租金、按部就班的积蓄）',
+    '偏财': '偏财：资产溢价 / 杠杆 / 资本运作 / 机遇（股票、拆迁、风投、奖金、突然的暴利）',
+
+    '身强': '赚硬钱：靠实力、靠积累、靠熬出来的资源。财星旺的年份，是赚钱的黄金期。',
+    '身弱': '赚活钱：靠人脉、靠时机、靠借力打力。把赚钱的事分出去，您反而能赚更多。',
+
+    '喜神': '钱是工具，有能力承载财富，赚来的钱能为您所用，用钱生钱、用钱买自由，而不是被钱牵着走。',
+    '忌神': '钱是主人，没有能力承载财富，赚来的钱要么留不住，要么带来了麻烦，为钱奔波、为钱焦虑。',
+
+    '财星旺': '财富的量⼤，机会多，资源丰富。',
+    '财星弱': '财富的量⼩，机会少，积累慢。',
+    '财星极旺': '赚钱像呼吸一样自然，但花钱也像呼吸一样自然。对钱没有执念，但钱总跟着他。',
+
+    '身强+财星旺+喜神': '能力极强，而现实中的钱和机会也极多。钱能极大地放大你的才华。\n建议：赚到钱后，绝对不要全部拿去滚动投资。立刻将至少50%的利润买成"死钱"（如优质房产、大额存单、长期国债）。用现实的"土"（固定资产）去吸收掉部分"水"（流动资金）的狂暴能量，把财富固化下来。',
+    '身强+财星旺+忌神': '能赚钱，但守不住钱，容易因财生灾（投资失误、被骗、官司）。盲目自信，觉得自己能驾驭一切高风险，最终被反噬。\n建议：绝对不要自己摸钱（股票、币圈、高风险投资、灰产、擦边业务）。把财政大权交给最无聊、保守但绝对靠谱的伴侣或专业理财师。用最死板的规则，强行锁死你那颗躁动的心。',
+    '身强+财星弱+喜神': '能力极强，且很渴望赚钱，但赚钱的机会少，没有大资金也没有好项目。需等运来扶起财星。容易错估了"财衰"，总想"以小博大"，掉进偏门。\n建议：放弃"以小博大"的偏门。直接去打工/出卖技能。凭借你极其强大的执行力，去大平台做高薪打工仔/高管。大平台水多，能接住你的身强。',
+    '身强+财星弱+忌神': '看不上小钱，赚不到大钱，眼高手低。用虚假的"精神富足"掩盖现实的"物质匮乏"，导致一辈子原地踏步。\n建议：面子不值钱，放下身段去赚钱。必须强迫自己去接触你原本鄙视的"俗人俗事"。哪怕去摆地摊、做点小生意，也是好的开始。把你那无处安放的"身强"精力，转化为极其落地的"苦力活"。先解决"无米之炊"的生存问题，再谈精神追求。',
+    '身弱+财星旺+喜神': '赚钱的机会多，但因为"身弱"底盘不稳，每天看着这笔巨款，内心都处于"如履薄冰"的极度恐慌中。你极其害怕失去它，对金钱有极度的焦虑症，像个提心吊胆的守财奴，表面风光，内心恐惧。\n建议：立刻用钱去买"土"（房产、大额保单、黄金）。把钱死死锁在固定资产里。你没有能力驾驭这笔钱，那就把钱"寄存"在一个强大且靠谱的系统或人身上（比如交给绝对忠诚的家族信托、极度老实的家族企业）。让系统/别人帮你守财，你只享受利息，绝对不要碰本金。',
+    '身弱+财星旺+忌神': '满眼是钱，但身体扛不住。精力不济、资源太多导致焦虑或生病。因钱生病、因钱受累、财来财去。误以为大钱是"保护伞"，其实是"吸血鬼"。\n建议：如果那个平台/伴侣在吸你的血，必须立刻切断联系，哪怕你眼睁睁看着大钱没了，也必须跑。你本来身弱，再耗下去你连命都没了。活着比有钱重要。',
+    '身弱+财星弱+喜神': '极度渴望钱来保护你，但现实中不仅没钱，连赚钱的线索都找不到。哪怕是一点点的小财务波动，都能让你陷入极度的焦虑。极度缺乏安全感。想赚大钱，但底盘太弱，一碰大钱就崩溃。\n建议：不要去想赚大钱，那会把你压垮。每天强迫自己存个几十块钱，或者通过极其微小但确定的劳动（比如每天坚持做一件枯燥的手工活）赚到小钱。这种"微小的确定性"能一点点修补你极其脆弱的底层自信。先有小钱，才能撑起你那虚弱的身。',
+    '身弱+财星弱+忌神': '能力弱，对钱极其缺乏安全感，加上现实中极度匮乏。这种极度的匮乏感，反而容易激发你不顾一切的"贪念"。你因为极度渴望翻身，反而极其容易掉进极其隐蔽的"杀猪盘"、高利贷或极其糟糕的合伙人手里。你连判断对错的能力都没有，被极其隐蔽的套路死死套牢，被暗中吸干，沦为被暗中控制的"提款机"。\n建议：三不原则：不接触、不转账、不借钱/不借钱出。如果被套牢，绝对不要试图通过"赚更多钱"来解套。物理拉黑所有相关人，切断一切财务往来。宁可成为老赖，也绝对不能再投钱进去填坑。',
+
+    '有食伤_财旺': '食伤代表你的头脑、点子、口才、技术。有食伤生财，说明你的钱是"活水"，是用脑子赚来的，越滚越大。',
+    '有食伤_财弱': '别想着去创业或者靠技能赚钱，等待源头运或者源头被引动时，再去做。其他时间通过其他方式赚钱。',
+    '无食伤': '八字里有财星，但没有食神、伤官来生它。钱只能靠死工资、或者意外之财（比如拆迁，但极少）。',
+
+    '有保镖': '适合合伙做生意，有人帮你管账、管人，钱丢不了。',
+    '无保镖_比劫': '赚到钱马上就被兄弟借走、合伙人卷跑、或者乱投资亏掉。这种人绝对不能合伙，不能借钱给人。',
+    '无保镖_印耗': '花钱在提升自己、学习、健康或家庭上，属于必要支出；或因固执、保守或家庭负担而影响财务效率。',
+
+    '有财库': '原局有财库',
+    '没有财库': '原局没有财库',
+
+    '财库无损': '原局有财库，且没有被刑冲破害。这人哪怕赚得不多，但极善理财，是个"守财奴"，积蓄惊人。',
+    '财库被冲被害被刑': '这叫"保险箱漏了个洞"。赚多少漏多少，存不住现钱，全变成了消耗品（买车、买包、应酬）。',
+    '财库不开': '有库但没被冲开，钱都压在固定资产里，或者手里有资源变现不了，得等特定流年（比如辰年冲戌）才能爆发套现。',
+
+    // 大运流年看财富
+    'dayun_liunian': '<h4 style="margin: 16px 0 8px 0; font-size: 14px;">1. 看大运是喜是忌</h4>'
+      + '<p style="margin-bottom: 8px;">大运是喜神，尽管去折腾；大运是忌神，越折腾越惨。</p>'
+      + '<h4 style="margin: 16px 0 8px 0; font-size: 14px;">2. 看流年</h4>'
+      + '<p style="margin-bottom: 4px;"><strong>身强财喜</strong>：最喜欢走财运、食伤运，最怕比劫运、印运，遇到财星流年满仓干！赚多少拿多少。</p>'
+      + '<p style="margin-bottom: 4px;"><strong>身强财忌</strong>：最喜欢比劫运、食伤运，最怕财运、官杀运，遇到财星流年赶紧扔！赚到立刻花掉，绝不留现金。</p>'
+      + '<p style="margin-bottom: 4px;"><strong>身弱财喜</strong>：最喜欢比劫运、印运，最怕财运、官杀运，遇到财星流年找人帮！有人托底才能干，单打独斗必亏。</p>'
+      + '<p style="margin-bottom: 8px;"><strong>身弱财忌</strong>：最喜欢比劫运、食伤运，最怕财运、印运，遇到财星流年，你绝对不能"单打独斗"。你必须去"借势"，找人帮，靠着别人你才能跟着喝口汤。</p>'
+      + '<h4 style="margin: 16px 0 8px 0; font-size: 14px;">3. 看流年财星是否到位，财星有没有受伤</h4>'
+      + '<p style="margin-bottom: 4px;"><strong>流年遇到正财</strong>：这一年往往是通过本职工作、固定工资、踏踏实实的劳动获得了丰厚的回报。钱来得稳，能存住。</p>'
+      + '<p style="margin-bottom: 4px;"><strong>流年遇到偏财</strong>：这一年往往有意外之财、投资收益、兼职外快、或者中奖。钱来得快，但要注意是不是"过路财神"。</p>'
+      + '<p style="margin-bottom: 8px;">如果流年财星来了，但大运是忌神运，那这一年往往是"看着别人赚钱自己眼红"，或者"账面流水大，但根本没利润"。</p>'
+      + '<h4 style="margin: 16px 0 8px 0; font-size: 14px;">4. 看流年有没有生财的源头（食伤有没有受伤）</h4>'
+      + '<p style="margin-bottom: 4px;"><strong>原局有财，流年遇食神/伤官</strong>：这叫"源头活水"，食伤为喜去生原局的财，你的才华（食伤）能直接变成真金白银。</p>'
+      + '<p style="margin-bottom: 8px;"><strong>原局无财，流年遇食伤</strong>：这一年你脑子极其活跃，想干大事，但因为没有财星（目标不明确），往往是忙活了一年，赚了名声没赚到钱。</p>'
+      + '<h4 style="margin: 16px 0 8px 0; font-size: 14px;">5. 看流年有没有财星的护卫</h4>'
+      + '<p style="margin-bottom: 4px;"><strong>遇到"官杀"护卫（官星护财）</strong>：流年财星来了，同时来了个"正官"或"七杀"。这十年/这一年，你赚钱极有秩序，有法律保护，有贵人（领导/平台）撑腰，别人不敢抢你的钱。（大吉）</p>'
+      + '<p style="margin-bottom: 8px;"><strong>遇到"比劫"劫夺（比劫夺财）</strong>：流年财星来了，但同时来了个"比肩"或"劫财"。这叫"群狼分食"。这一年你确实赚到了钱，但马上就会被兄弟借钱不还、合伙人卷款、或者因为生病/意外把钱花光。</p>'
+      + '<h4 style="margin: 16px 0 8px 0; font-size: 14px;">6. 看流年中财库的情况</h4>'
+      + '<p style="margin-bottom: 4px;"><strong>财库被冲开（相冲）</strong>：财库为喜神，开库发大财，往往是卖房、套现、拿到大笔融资的一年。财库为忌神，塌库，家里老人重病花光积蓄，或投资爆仓。</p>'
+      + '<p style="margin-bottom: 4px;"><strong>财库被刑坏（相刑）</strong>：比如原局财库在"戌"，流年遇到"丑"（丑戌刑）。这叫"财库漏水"，钱在不知不觉中流失，比如被电信诈骗、或者账目对不上亏了钱。</p>'
+      + '<p style="margin-bottom: 4px;"><strong>财库被合（三合/六合）</strong>：财库为喜神，资金被高效整合；财库为忌神，资金被套牢。</p>'
+      + '<p style="margin-bottom: 4px;"><strong>财库被会（三会）</strong>：财库为喜神，资金集中到账，或形成巨大的产业垄断。资产呈"集团化"趋势；财库为忌神，极大的负债或资金周转压力。</p>'
+      + '<p style="margin-bottom: 8px;"><strong>财库被绊（合绊）</strong>：财库为喜神，主动"锁住"财富，强制储蓄或锁定收益；财库为忌神，被动"锁住"财富，资金被占用或冻结。</p>'
+  };
+
+  // ========== State ==========
+  var answers = {};
+  var currentQuestionIndex = 0; // index into the filtered active questions array
+
+  // Get the list of questions that should be shown based on current answers
+  function getActiveQuestions() {
+    var active = [];
+    for (var i = 0; i < questions.length; i++) {
+      var q = questions[i];
+      if (q.dependsOn) {
+        var depVal = answers[q.dependsOn];
+        if (!depVal) continue; // dependency not met
+        var matched = false;
+        if (Array.isArray(depVal)) {
+          for (var j = 0; j < depVal.length; j++) {
+            if (q.dependsValue === depVal[j]) { matched = true; break; }
+          }
+        } else {
+          matched = (q.dependsValue === depVal);
+        }
+        if (!matched) continue;
+      }
+      active.push(q);
+    }
+    return active;
+  }
+
+  // Get the current question object
+  function getCurrentQuestion(activeList) {
+    if (!activeList) activeList = getActiveQuestions();
+    if (currentQuestionIndex >= activeList.length) currentQuestionIndex = activeList.length - 1;
+    if (currentQuestionIndex < 0) currentQuestionIndex = 0;
+    return activeList[currentQuestionIndex];
+  }
+
+  // Render current question
+  function renderQuestion() {
+    var active = getActiveQuestions();
+    var q = getCurrentQuestion(active);
+
+    // Progress
+    var totalQ = active.length;
+    var displayNum = currentQuestionIndex + 1;
+    $('#progress-fill').css('width', (displayNum / totalQ * 100) + '%');
+    $('#progress-text').text(displayNum + ' / ' + totalQ);
+
+    // Title
+    $('#question-title').text(q.title);
+
+    // Options
+    var html = '';
+    var saved = answers[q.id];
+    if (!saved) saved = q.type === 'multi' ? [] : null;
+
+    for (var i = 0; i < q.options.length; i++) {
+      var opt = q.options[i];
+      var checked = false;
+      if (q.type === 'multi') {
+        checked = saved && saved.indexOf(opt.value) >= 0;
+      } else {
+        checked = (saved === opt.value);
+      }
+      html += '<div class="option' + (checked ? ' selected' : '') + '" data-value="' + opt.value + '">'
+            + '<input type="' + (q.type === 'multi' ? 'checkbox' : 'radio') + '" name="' + q.id + '" value="' + opt.value + '"' + (checked ? ' checked' : '') + '>'
+            + '<label>' + opt.text + '</label>'
+            + '</div>';
+    }
+    $('#question-options').html(html);
+
+    // Nav buttons
+    $('#btn-prev').prop('disabled', currentQuestionIndex === 0);
+    $('#btn-next').text(currentQuestionIndex === active.length - 1 ? '查看结果' : '下一题');
+
+    // Click handler
+    $('#question-options .option').off('click').on('click', function() {
+      var val = $(this).data('value');
+      if (q.type === 'multi') {
+        var arr = answers[q.id] || [];
+        var idx = arr.indexOf(val);
+        if (idx >= 0) {
+          arr.splice(idx, 1);
+        } else {
+          arr.push(val);
+        }
+        answers[q.id] = arr;
+        $(this).toggleClass('selected');
+        $(this).find('input').prop('checked', idx < 0);
+      } else {
+        answers[q.id] = val;
+        $('#question-options .option').removeClass('selected');
+        $(this).addClass('selected');
+        $(this).find('input').prop('checked', true);
+      }
+    });
+  }
+
+  // Validate current question
+  function canProceed() {
+    var active = getActiveQuestions();
+    var q = active[currentQuestionIndex];
+    if (!q) return false;
+    var ans = answers[q.id];
+    if (q.type === 'multi') {
+      return ans && ans.length > 0;
+    } else {
+      return !!ans;
+    }
+  }
+
+  // Next question
+  function nextQuestion() {
+    if (!canProceed()) {
+      alert('请先选择答案');
+      return;
+    }
+    var active = getActiveQuestions();
+    if (currentQuestionIndex < active.length - 1) {
+      currentQuestionIndex++;
+      renderQuestion();
+    } else {
+      showResult();
+    }
+  }
+
+  // Previous question
+  function prevQuestion() {
+    if (currentQuestionIndex > 0) {
+      currentQuestionIndex--;
+      renderQuestion();
+    }
+  }
+
+  // ========== Build Result Page ==========
+  function showResult() {
+    $('#page-question').removeClass('active');
+    $('#page-result').addClass('active');
+
+    var html = '';
+
+    // ---- 基本信息 ----
+    html += '<div class="info-box result-section">'
+          + '<h3>基本信息</h3>'
+          + '<div class="info-row"><span class="info-label">有没有财星</span><span class="info-value">' + (answers['q_has_caixing'] || '未选择') + '</span></div>'
+          + '<div class="info-row"><span class="info-label">财星类型</span><span class="info-value">' + (answers['q_caixing_type'] || '未选择') + '</span></div>'
+          + '<div class="info-row"><span class="info-label">身强/身弱</span><span class="info-value">' + (answers['q_shen_qiang_ruo'] || '未选择') + '</span></div>'
+          + '<div class="info-row"><span class="info-label">财星喜忌</span><span class="info-value">' + (answers['q_caixing_xi_ji'] || '未选择') + '</span></div>'
+          + '<div class="info-row"><span class="info-label">财星旺衰</span><span class="info-value">' + (answers['q_caixing_wang_shuai'] || '未选择') + '</span></div>'
+          + '</div>';
+
+    // ---- 综合汇总表 ----
+    html += '<div class="result-section">'
+          + '<h3>综合汇总表</h3>'
+          + '<table>'
+          + '<thead><tr>'
+          + '<th style="width:15%">项目</th>'
+          + '<th style="width:20%">选择结果</th>'
+          + '<th style="width:65%">对应分析</th>'
+          + '</tr></thead><tbody>';
+
+    // Q1
+    html += '<tr>'
+          + '<td>有没有财星</td>'
+          + '<td>' + (answers['q_has_caixing'] || '未选择') + '</td>'
+          + '<td class="text-small">' + (analysisText[answers['q_has_caixing']] || '').replace(/\n/g, '<br><br>') + '</td>'
+          + '</tr>';
+
+    // Q2
+    if (answers['q_caixing_type']) {
+      html += '<tr>'
+            + '<td>财星类型</td>'
+            + '<td>' + answers['q_caixing_type'] + '</td>'
+            + '<td class="text-small">' + (analysisText[answers['q_caixing_type']] || '') + '</td>'
+            + '</tr>';
+    }
+
+    // Q3
+    html += '<tr>'
+          + '<td>身强身弱</td>'
+          + '<td>' + (answers['q_shen_qiang_ruo'] || '未选择') + '</td>'
+          + '<td class="text-small">' + (analysisText[answers['q_shen_qiang_ruo']] || '') + '</td>'
+          + '</tr>';
+
+    // Q4
+    html += '<tr>'
+          + '<td>财星喜忌</td>'
+          + '<td><span class="tag ' + (answers['q_caixing_xi_ji'] === '喜神' ? 'tag-yes' : 'tag-no') + '">' + (answers['q_caixing_xi_ji'] || '未选择') + '</span></td>'
+          + '<td class="text-small">' + (analysisText[answers['q_caixing_xi_ji']] || '') + '</td>'
+          + '</tr>';
+
+    // Q5
+    html += '<tr>'
+          + '<td>财星旺衰</td>'
+          + '<td>' + (answers['q_caixing_wang_shuai'] || '未选择') + '</td>'
+          + '<td class="text-small">' + (analysisText[answers['q_caixing_wang_shuai']] || '') + '</td>'
+          + '</tr>';
+
+    // Q6
+    if (answers['q_shen_cai_jiaoliang']) {
+      html += '<tr>'
+            + '<td>身与财的较量</td>'
+            + '<td>' + answers['q_shen_cai_jiaoliang'] + '</td>'
+            + '<td class="text-small">' + (analysisText[answers['q_shen_cai_jiaoliang']] || '').replace(/\n/g, '<br><br>') + '</td>'
+            + '</tr>';
+    }
+
+    // Q7
+    if (answers['q_has_shishang']) {
+      html += '<tr>'
+            + '<td>生财源头（食伤）</td>'
+            + '<td>' + answers['q_has_shishang'].replace(/_/g, ' + ').replace('有食伤 + ', '有食伤 + 财星') + '</td>'
+            + '<td class="text-small">' + (analysisText[answers['q_has_shishang']] || '') + '</td>'
+            + '</tr>';
+    }
+
+    // Q8
+    if (answers['q_baobiao'] && answers['q_baobiao'].length > 0) {
+      var baobiaoLabels = [];
+      var baobiaoTexts = [];
+      for (var b = 0; b < answers['q_baobiao'].length; b++) {
+        var bb = answers['q_baobiao'][b];
+        baobiaoLabels.push(bb);
+        if (analysisText[bb]) baobiaoTexts.push(analysisText[bb]);
+      }
+      html += '<tr>'
+            + '<td>财星保镖</td>'
+            + '<td>' + baobiaoLabels.join('、') + '</td>'
+            + '<td class="text-small">' + baobiaoTexts.join('<br><br>') + '</td>'
+            + '</tr>';
+    }
+
+    // Q9
+    html += '<tr>'
+          + '<td>有没有财库</td>'
+          + '<td>' + (answers['q_caiku'] || '未选择') + '</td>'
+          + '<td class="text-small">' + (analysisText[answers['q_caiku']] || '') + '</td>'
+          + '</tr>';
+
+    // Q10
+    if (answers['q_caiku_yindong']) {
+      html += '<tr>'
+            + '<td>财库引动</td>'
+            + '<td>' + answers['q_caiku_yindong'] + '</td>'
+            + '<td class="text-small">' + (analysisText[answers['q_caiku_yindong']] || '') + '</td>'
+            + '</tr>';
+    }
+
+    html += '</tbody></table></div>';
+
+    // ---- 大运流年看财富（放在最底下）----
+    html += '<div class="result-section" style="margin-top: 30px;">'
+          + '<h3>大运流年看财富</h3>'
+          + '<div class="text-small" style="background:#fff; border:1px solid #e0e0e0; border-radius:6px; padding:16px; line-height:2;">'
+          + analysisText['dayun_liunian']
+          + '</div>'
+          + '</div>';
+
+    $('#result-content').html(html);
+  }
+
+  // ========== Event Bindings ==========
+  $('#btn-start').on('click', function() {
+    $('#page-welcome').removeClass('active');
+    $('#page-question').addClass('active');
+    currentQuestionIndex = 0;
+    renderQuestion();
+  });
+
+  $('#btn-next').on('click', nextQuestion);
+  $('#btn-prev').on('click', prevQuestion);
+
+  $('#btn-restart').on('click', function() {
+    answers = {};
+    currentQuestionIndex = 0;
+    $('#page-result').removeClass('active');
+    $('#page-welcome').addClass('active');
+  });
+
+  $(document).on('keydown', function(e) {
+    if ($('#page-question').hasClass('active')) {
+      if (e.key === 'ArrowRight' || e.key === 'Enter') {
+        e.preventDefault();
+        nextQuestion();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevQuestion();
+      }
+    }
+  });
+
+});
+</script>
+</body>
+</html>
