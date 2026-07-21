@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>子女运势测算</title>
+    <script src='https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js'></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* 开始页面 */
+        .start-page {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .start-page h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .start-page p {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 40px;
+            line-height: 1.8;
+        }
+
+        /* 题目页面 */
+        .question-page {
+            display: none;
+            background: #fff;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .question-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .question-header h2 {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .question-header .subtitle {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #3498db;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .options {
+            margin-bottom: 30px;
+        }
+
+        .option-item {
+            display: block;
+            width: 100%;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+            cursor: pointer;
+            font-size: 15px;
+            text-align: left;
+            transition: all 0.2s ease;
+            color: #333;
+        }
+
+        .option-item:hover {
+            border-color: #3498db;
+            background: #eaf4fd;
+        }
+
+        .option-item.selected {
+            border-color: #3498db;
+            background: #eaf4fd;
+            color: #2980b9;
+            font-weight: 600;
+        }
+
+        .option-item.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-primary:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d5dbdb;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: #fff;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        /* 总结页面 */
+        .summary-page {
+            display: none;
+            background: #fff;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .summary-page h2 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .summary-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .summary-section h3 {
+            font-size: 17px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .answer-label {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .answer-value {
+            font-size: 15px;
+            color: #2980b9;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .result-text {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .restart-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            margin-top: 30px;
+            background: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .restart-btn:hover {
+            background: #2980b9;
+        }
+
+        /* 总结页中的归纳部分 */
+        .summary-note {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+
+        .summary-note h3 {
+            font-size: 17px;
+            color: #2c3e50;
+            margin-bottom: 12px;
+        }
+
+        .summary-note p {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .summary-note strong {
+            color: #333;
+        }
+
+        /* 第5题分步标签 */
+        .step-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .step-indicator.step-1 {
+            background: #eaf4fd;
+            color: #2980b9;
+        }
+
+        .step-indicator.step-2 {
+            background: #eafaf0;
+            color: #27ae60;
+        }
+
+        .step-done-hint {
+            font-size: 13px;
+            color: #27ae60;
+            margin-bottom: 16px;
+        }
+
+        .step-separator {
+            height: 1px;
+            background: #eee;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class='container'>
+
+    <!-- 开始页面 -->
+    <div class='start-page' id='startPage'>
+        <h1>子女运势测算</h1>
+        <p>通过选择各项条件，逐步了解子女星、子女宫<br>以及生育相关的命理信息</p>
+        <button class='btn btn-primary' id='startBtn' style='font-size:18px; padding:14px 50px;'>开始测算</button>
+    </div>
+
+    <!-- 题目页面 -->
+    <div class='question-page' id='questionPage'>
+        <div class='question-header'>
+            <h2 id='qTitle'></h2>
+            <div class='subtitle' id='qSubtitle'></div>
+        </div>
+        <div class='progress-bar'>
+            <div class='progress-fill' id='progressFill'></div>
+        </div>
+        <div class='options' id='optionsContainer'></div>
+        <div class='nav-buttons'>
+            <button class='btn btn-secondary' id='prevBtn'>上一题</button>
+            <button class='btn btn-primary' id='nextBtn' disabled>下一题</button>
+        </div>
+    </div>
+
+    <!-- 总结页面 -->
+    <div class='summary-page' id='summaryPage'>
+        <h2>归纳总结</h2>
+
+        <div class='summary-section' id='summaryQ1'></div>
+        <div class='summary-section' id='summaryQ2'></div>
+        <div class='summary-section' id='summaryQ3'></div>
+        <div class='summary-section' id='summaryQ4'></div>
+        <div class='summary-section' id='summaryQ5'></div>
+
+        <div class='summary-note'>
+            <h3>生孩子应期</h3>
+            <p>1.流年引动子女星：流年出现子女星、流年合住子女星、流年冲克子女星<br>
+            2.流年引动子女宫：流年冲开子女宫、流年合住子女宫、流年伏吟子女宫<br>
+            3.引动的是'喜神'：怀孕过程顺利，生下来孩子乖巧，自己也容易因为生孩子升职加薪<br>
+            引动的是'忌神'：怀孕极其辛苦，孕吐严重，或者生完孩子后经济压力骤增，身体垮掉</p>
+        </div>
+
+        <div class='summary-note'>
+            <h3>生几个孩子</h3>
+            <p><strong>多子之象（容易怀，容易留）：</strong>子女星不仅旺（比如食伤一片），而且没有严重的冲克。说明你先天气殖能力强，且子宫环境好（不流产）。在古代这是多子多福，在现代可能就是生了两三个还想生。<br><br>
+            <strong>独子之象（缘分只够一个）：</strong>子女星只有一个，且力量不太强。或者虽然有两个，但其中一个被旁边的地支'合化'掉了，或者被'刑冲'坏了。子女缘分偏薄或来得晚。被合化代表精力被其他事（如事业）分流，不代表失去。实际养大的可能就一两个，但孩子很精贵。<br><br>
+            <strong>无子之象（极其难怀）：</strong>八字完全无子女星，且子女宫（时柱）又被严重破坏（比如坐在忌神上又被冲）。先天缘分极度淡薄，大运流年引动时仍有机会，可能需要医学辅助生殖。</p>
+        </div>
+
+        <div class='summary-note'>
+            <h3>生男生女</h3>
+            <p><strong>1. 传统看法（看十神的阴阳）：</strong><br>
+            男命：以官杀为子女。看七杀（偏官）：七杀是阳干，生男孩的概率大。看正官：正官是阴干，生女孩的概率大。<br>
+            女命：以食伤为子女。看食神：食神是阳干，生男孩的概率大。看伤官：伤官是阴干，生女孩的概率大。<br><br>
+            <strong>2. 看宫位法（看时柱的阴阳）：</strong><br>
+            如果十神看不清，就看时柱（子女宫）。时柱天干地支是阳（如甲子、丙寅）：偏男。时柱天干地支是阴（如乙丑、丁卯）：偏女。如果时柱是一阴一阳（如甲丑）：看地支，地支代表实处，阴支主女，阳支主男。</p>
+        </div>
+
+        <button class='restart-btn' id='restartBtn'>重新测算</button>
+    </div>
+
+</div>
+
+<script>
+$(function() {
+
+    // ========== 题目数据 ==========
+    var questions = [
+        {
+            title: '有没有子女星',
+            subtitle: '请选择您的子女星情况',
+            options: [
+                { text: '有子女星', result: '有子女星的人，命中有子女缘分，具备生育后代的先天条件。具体子女的优劣和数量，还需结合子女星的旺衰、喜忌以及子女宫的情况综合判断。' },
+                { text: '无子女星', result: '八字中无子女星，说明先天子女缘分较为淡薄。但这并不代表完全没有子女，只是需要借助大运或流年的引动，或者在特定时机才容易怀孕。也可能需要借助医学辅助生殖技术。' }
+            ]
+        },
+        {
+            title: '子女星旺衰',
+            subtitle: '请选择您的子女星旺衰情况',
+            options: [
+                { text: '子女星旺', result: '孩子先天身体素质好，精力旺盛，有冲劲。这类孩子通常体格健壮，活力充沛，在成长过程中表现出较强的行动力和竞争意识，能够积极应对各种挑战。' },
+                { text: '子女星弱', result: '孩子往往体弱，或者性格极其内向懦弱，难担大任。这类孩子需要父母更多的关爱和呵护，在成长过程中可能需要特别关注身体健康和心理建设，后天培养尤为重要。' }
+            ]
+        },
+        {
+            title: '子女星的喜忌',
+            subtitle: '请选择您的子女星喜忌情况',
+            options: [
+                { text: '子女星为喜，且得生扶', result: '这孩子天生就是来"报恩"的，不仅智商超群，而且情商极高。他做的每一件事，都能精准踩在时代的节拍上。你不需要拔苗助长，他自带的能量场会推着他往前走，你只管享受骄傲就行。' },
+                { text: '子女星为忌，有制化', result: '这孩子小时候绝对是个混世魔王，顽劣不堪、顶撞师长。但别急，这叫"宝剑锋从磨砺出"。一旦他开窍（制化发力），必然是顶级学霸或技术大牛。这种孩子靠"挫折教育"成才，你越打压他，他将来反弹得越高！' },
+                { text: '子女星为忌，无制化', result: '这孩子属于"平安是福"的类型。别拿清华北大要求他，教他一门踏实的谋生手艺，别沾染黄赌毒，能陪在你们身边端茶倒水，就是他最大的出息。' }
+            ]
+        },
+        {
+            title: '子女宫的喜忌',
+            subtitle: '请选择您的子女宫喜忌情况',
+            options: [
+                { text: '子女宫为喜', result: '你提供的家庭环境、教育资源、物质基础，刚好是孩子需要的。这叫"好种落在肥田里"，孩子能够在良好的环境中茁壮成长，充分发挥自身潜能。' },
+                { text: '子女宫为忌', result: '你给孩子提供的"家庭土壤、教育方式、或者资源环境"，从根本上就是错的，是消耗你们的。你养育他的这个过程，极其痛苦且低效。需要及时反思和调整教育方式。' }
+            ]
+        },
+        {
+            title: '子女星与子女宫的互动',
+            subtitle: '请先选择喜忌组合，再选择互动方式',
+            // step1: 4种喜忌组合（单选）
+            step1Options: [
+                { text: '子女星为喜 + 子女宫为喜' },
+                { text: '子女星为喜 + 子女宫为忌' },
+                { text: '子女星为忌 + 子女宫为喜' },
+                { text: '子女星为忌 + 子女宫为忌' }
+            ],
+            // step2: 8种互动模式（单选）
+            step2Options: [
+                { text: '星生宫' },
+                { text: '星无力生宫' },
+                { text: '星克宫' },
+                { text: '星无力克宫' },
+                { text: '宫生星' },
+                { text: '宫无力生星' },
+                { text: '宫克星' },
+                { text: '宫无力克星' }
+            ]
+        }
+    ];
+
+    // 星宫互动的详细结果：resultMap[互动方式][喜忌组合] = 文本
+    var resultMap = {
+        '星生宫': {
+            '子女星为喜 + 子女宫为喜': '孩子极其出息，赚了大钱或有了大权。把这股强大的正能量/财富，注入到原本就温暖、有底蕴的家庭中。买豪宅、带父母环游世界、家族阶层跨越。大吉大利，教科书般的幸福晚年。',
+            '子女星为喜 + 子女宫为忌': '孩子是个混世魔王，家庭也不是什么好鸟。比如黑社会家庭，孩子带着一帮打手回来抢夺家族控制权。黑吃黑，内部火并，家破人亡，甚至全员进去踩缝纫机。',
+            '子女星为忌 + 子女宫为喜': '孩子极其有钱/有权，想尽孝道。但家庭是个"忌神"体质（比如父母嗜赌成性、或者家里有惹是生非的极品亲戚）。孩子的钱像扔进无底洞。孩子越有本事，家庭吸得越狠。最终孩子可能被原生家庭拖垮事业，或者精神崩溃。',
+            '子女星为忌 + 子女宫为忌': '孩子在外边混成了黑恶势力、或者沾染了黄赌毒等极度恶劣的积习。他把这股强大的"黑恶能量"，强行注入到原本老实本分的家庭中。好端端的家庭被孩子毁了。比如高利贷上门追债、警察上门抓人，父母原本安稳的晚年天天在惊恐中度过。'
+        },
+        '星无力生宫': {
+            '子女星为喜 + 子女宫为喜': '孩子极其孝顺、懂事，恨不得把心掏给父母。但孩子自己混得很惨，赚不到钱，或者身体不好。家庭氛围很好，父母也心疼孩子。"心有余而力不足的孝子"。父母不怪孩子，孩子却一辈子内疚。',
+            '子女星为喜 + 子女宫为忌': '孩子是个混混，总想从家里捞好处。家里也是个烂摊子。孩子想吸家里的血，但家里也没血可吸。为了几块钱的家产或者一点破事，母子对簿公堂，互相扯皮。虽然难看，但都是底层互害，掀不起大浪。',
+            '子女星为忌 + 子女宫为喜': '孩子本性极好，想拯救家庭。但家庭是个无底洞（比如父亲赌博、母亲作妖）。孩子拼命赚钱填坑，但怎么填也填不满。孝子被吸血鬼家庭活活榨干，最后可能跟着家庭一起垮掉，甚至走上绝路。',
+            '子女星为忌 + 子女宫为忌': '孩子眼高手低，爱吹牛，甚至有些自私，但家庭底子好，父母宽容。孩子天天说"妈，我明天就赚大钱给你买别墅"，实际上连个鸡蛋都买不起。家庭没有被拖垮，只是多了一个爱吹牛的乐子人。'
+        },
+        '星克宫': {
+            '子女星为喜 + 子女宫为喜': '优秀的孩子，为了追求更大的事业（比如远嫁、出国、创业），强行打破了原本温馨但保守、黏腻的家庭模式。孩子确实出息了，但父母觉得"这白眼狼把我们甩了"，家庭结构被撕裂，有遗憾但不算坏事。',
+            '子女星为喜 + 子女宫为忌': '败家孩子把本来就千疮百孔的家彻底砸烂。为了还赌债，把家里最后遮风挡雨的破房子都卖了，全家流落街头。',
+            '子女星为忌 + 子女宫为喜': '极其解气！优秀的孩子，强势掀翻了原生家庭的泥潭！比如：女儿考上名校，为了不让弟弟吸血，硬生生把重男轻女的父母告上法庭，或者彻底断绝关系。孩子通过"克"家庭，完成了自我救赎，大快人心。',
+            '子女星为忌 + 子女宫为忌': '糟糕的孩子（星忌：黄赌毒、黑社会），强势摧毁了一个原本幸福美满的家庭。比如高利贷上门把父母逼上绝路，或者孩子犯罪连累父母倾家荡产。典型的"一粒老鼠屎坏了一锅粥"。'
+        },
+        '星无力克宫': {
+            '子女星为喜 + 子女宫为喜': '有出息、好心的孩子，想改变家庭落后、保守的观念，但自己羽翼未丰，被整个家族联名声讨。孩子陷入深深的抑郁和自我内耗中，觉得"我原来什么都改变不了"。',
+            '子女星为喜 + 子女宫为忌': '废物孩子想折腾本来就烂的家，比如俩人互骂，但谁也弄不死谁。无能的狂怒，除了浪费口水，改变不了任何实质性现状。',
+            '子女星为忌 + 子女宫为喜': '好孩子想拯救烂家庭（比如拼命赚钱替赌鬼父亲还债）。结果自己被死死拖下水，搞得一身心伤，最后被拖垮。最让人意难平的悲剧，被原生家庭吸干了最后一滴血。',
+            '子女星为忌 + 子女宫为忌': '熊孩子想作妖搞破坏，但家庭根基太稳、太正，他根本翻不起浪。家庭稳如泰山，孩子摔砸两句就被无视了，像个跳梁小丑。'
+        },
+        '宫生星': {
+            '子女星为喜 + 子女宫为喜': '家里把纯正的爱、物质、教育资源，灌输给孩子，环境滋养了孩子，孩子如鱼得水，成为学霸/精英，反哺家庭。',
+            '子女星为喜 + 子女宫为忌': '家里给了最好的资源，但孩子本身是个烂泥扶不上墙的坏种，典型的"富二代败家"，家里砸锅卖铁供他，他拿去吸毒、赌博、欺负父母。',
+            '子女星为忌 + 子女宫为喜': '家庭环境极度高压、病态、或者父母极其强势且控制欲极强。但孩子本身底子极好，极其聪明坚韧。孩子确实被"逼"出来了，极其优秀，甚至名利双收。但是！他的内心是扭曲的、冷酷的。他不仅不会感恩父母，反而会觉得父母是他的耻辱或绊脚石，最终用他的优秀来"报复"或"榨干"家庭。',
+            '子女星为忌 + 子女宫为忌': '充满负能量、控制欲、或者极度贫穷的家庭环境，灌输给了一个本身就有恶习的孩子。培养出一个无法无天、极度反社会、把家庭吃干抹净的混世魔王。'
+        },
+        '宫无力生星': {
+            '子女星为喜 + 子女宫为喜': '父母通情达理，家庭氛围极其温馨。父母拼了命想把最好的爱、教育给孩子，但因为家里穷、或父母身体/能力实在不行（宫弱），没能满足孩子天赋的需求。孩子懂事且优秀，但心里总有一丝遗憾。',
+            '子女星为喜 + 子女宫为忌': '父母掏心掏肺，砸锅卖铁。但孩子本身是个烂泥扶不上墙的学渣/混混。父母付出打了水漂，孩子长大后不仅不感恩，反而怪父母"没本事，没给我更好的平台"。典型的"升米恩，斗米仇"。',
+            '子女星为忌 + 子女宫为喜': '家庭环境极其糟糕，比如家暴、赌博、或者极度重男轻女。但孩子底子极好，极其坚韧。家庭想把孩子拉下水，但那个力量强行使锁住。孩子像野草一样在夹缝中野蛮生长，最终靠着自身的优秀彻底逃离了这个原生家庭，断绝关系。对孩子是好事，对家庭是撕破脸。',
+            '子女星为忌 + 子女宫为忌': '糟糕的家庭想管教糟糕的孩子，但都菜鸡互啄，谁也管不了谁。互相放养，互相厌恶。孩子早早辍学混社会，家庭也懒得管。虽然不幸，但因为没有强连接，反而没有深度伤害。'
+        },
+        '宫克星': {
+            '子女星为喜 + 子女宫为喜': '父母绝对是好人，家庭氛围也很好。但他们出于"为了你好"的世俗执念（比如非要你考公、逼你放弃不靠谱的梦想），用极其强势的手段，生生折断了你天才的翅膀。孩子最后成了父母期待的"乖孩子"，但一辈子郁郁寡欢，丧失了眼里的光。',
+            '子女星为喜 + 子女宫为忌': '正直的家庭环境，面对一个走上歪路、沾染恶习的孩子，果断采取了雷霆手段（送去少管所、强制断网、断绝经济）。虽然过程极其痛苦、鸡飞狗跳，但硬生生把一个潜在的罪犯/废人给拉回了正轨。浪子回头金不换。',
+            '子女星为忌 + 子女宫为喜': '父母自私、控制欲极强、或者家里充满暴力/负能量。面对一个极其优秀、有灵气的孩子，他们见不得孩子好，用冷暴力或毒打将其摧毁。人间惨剧。孩子可能患上重度抑郁，或者干脆变成一个麻木的废人。',
+            '子女星为忌 + 子女宫为忌': '病态的家庭（比如赌鬼父母），压制一个同样病态的混混孩子。狗咬狗一嘴毛，家里天天发生流血冲突，但谁也不是好东西，谈不上谁伤害了谁。'
+        },
+        '宫无力克星': {
+            '子女星为喜 + 子女宫为喜': '父母通情达理，讲道理，想给好孩子立规矩。但父母太软弱了，好孩子虽然不听话，但心里不恨父母，只是觉得"我爸妈太弱了，我必须自己拿主意"。有点小叛逆、小隔阂，但不断绝关系，属于"温和的分离"。',
+            '子女星为喜 + 子女宫为忌': '好父母想管教坏孩子，但根本镇不住场子。孩子当面嘲讽父母："你算老几？你管得着我吗？"父母被气出病来，眼睁睁看着孩子滑向深渊。',
+            '子女星为忌 + 子女宫为喜': '糟糕的父母/重男轻女的家庭，想拖好孩子下水，或者强行压榨她。但孩子实力太强了，直接无视这些破事。孩子心里冷笑一声，直接拉黑原生家庭，远走高飞。烂人只能干瞪眼。',
+            '子女星为忌 + 子女宫为忌': '烂环境想管烂孩子，谁也奈何不了谁。互相摆烂，你骂你的，我玩我的，底层互害的日常。'
+        }
+    };
+
+    var currentQ = 0;
+    var answers = []; // answers[0]~answers[3] = 选中的option index; answers[4] = { step1: idx, step2: idx }
+    var selectedOption = -1;
+
+    // 第5题的内部状态
+    var q5Step = 1; // 1 = 选喜忌组合, 2 = 选互动模式
+    var q5Step1Sel = -1;
+    var q5Step2Sel = -1;
+
+    // ===== 开始 =====
+    $('#startBtn').on('click', function() {
+        $('#startPage').hide();
+        $('#questionPage').show();
+        currentQ = 0;
+        answers = [];
+        selectedOption = -1;
+        q5Step = 1;
+        q5Step1Sel = -1;
+        q5Step2Sel = -1;
+        loadQuestion(currentQ);
+    });
+
+    // ===== 加载题目 =====
+    function loadQuestion(idx) {
+        var q = questions[idx];
+        $('#qTitle').text(q.title);
+        $('#qSubtitle').text(q.subtitle);
+        $('#progressFill').css('width', (idx / questions.length * 100) + '%');
+
+        $('#optionsContainer').empty();
+        selectedOption = -1;
+        $('#nextBtn').prop('disabled', true);
+
+        if (idx === 4) {
+            // 第5题：两步单选
+            renderQ5();
+        } else {
+            // 普通单选题
+            for (var i = 0; i < q.options.length; i++) {
+                var opt = q.options[i];
+                var html = '<button class="option-item" data-idx="' + i + '">' + opt.text + '</button>';
+                $('#optionsContainer').append(html);
+            }
+        }
+
+        if (idx === 0) {
+            $('#prevBtn').hide();
+        } else {
+            $('#prevBtn').show();
+        }
+
+        if (idx === questions.length - 1) {
+            $('#nextBtn').text('查看总结');
+        } else {
+            $('#nextBtn').text('下一题');
+        }
+
+        restoreAnswer(idx);
+    }
+
+    // ===== 渲染第5题 =====
+    function renderQ5() {
+        var q = questions[4];
+
+        if (q5Step === 1) {
+            // Step 1: 选择喜忌组合
+            $('#optionsContainer').append(
+                '<div><span class="step-indicator step-1">第一步</span></div>' +
+                '<div style="font-size:14px;color:#666;margin-bottom:16px;">请选择子女星与子女宫的喜忌组合</div>'
+            );
+            for (var i = 0; i < q.step1Options.length; i++) {
+                var opt = q.step1Options[i];
+                var cls = (i === q5Step1Sel) ? ' selected' : '';
+                var html = '<button class="option-item' + cls + '" data-step="1" data-idx="' + i + '">' + opt.text + '</button>';
+                $('#optionsContainer').append(html);
+            }
+        } else {
+            // Step 2: 选择互动模式
+            // 显示第一步已选结果
+            $('#optionsContainer').append(
+                '<div><span class="step-indicator step-1">第一步（已完成）</span></div>' +
+                '<div class="step-done-hint">已选择：' + q.step1Options[q5Step1Sel].text + '</div>' +
+                '<div class="step-separator"></div>' +
+                '<div><span class="step-indicator step-2">第二步</span></div>' +
+                '<div style="font-size:14px;color:#666;margin-bottom:16px;">请选择星与宫的互动模式</div>'
+            );
+            for (var i = 0; i < q.step2Options.length; i++) {
+                var opt = q.step2Options[i];
+                var cls = (i === q5Step2Sel) ? ' selected' : '';
+                var html = '<button class="option-item' + cls + '" data-step="2" data-idx="' + i + '">' + opt.text + '</button>';
+                $('#optionsContainer').append(html);
+            }
+        }
+    }
+
+    // ===== 恢复答案 =====
+    function restoreAnswer(idx) {
+        if (answers[idx] === undefined) return;
+
+        if (idx === 4) {
+            // 恢复第5题
+            q5Step1Sel = answers[4].step1;
+            q5Step2Sel = answers[4].step2;
+            if (q5Step2Sel !== -1) {
+                // 两步都已完成，保持在step2视图并选中
+                q5Step = 2;
+                renderQ5();
+                $('#nextBtn').prop('disabled', false);
+            } else if (q5Step1Sel !== -1) {
+                // 只完成第一步
+                q5Step = 2;
+                renderQ5();
+                $('#nextBtn').prop('disabled', true);
+            }
+        } else {
+            selectedOption = answers[idx];
+            $('.option-item[data-idx="' + selectedOption + '"]').addClass('selected');
+            $('#nextBtn').prop('disabled', false);
+        }
+    }
+
+    // ===== 点击选项 =====
+    $(document).on('click', '.option-item', function() {
+        if (currentQ === 4) {
+            var step = $(this).data('step');
+            var idx = $(this).data('idx');
+
+            if (step === 1) {
+                q5Step1Sel = idx;
+                // 进入第二步
+                q5Step = 2;
+                $('#optionsContainer').empty();
+                renderQ5();
+                $('#nextBtn').prop('disabled', true);
+            } else if (step === 2) {
+                q5Step2Sel = idx;
+                $('.option-item[data-step="2"]').removeClass('selected');
+                $(this).addClass('selected');
+                $('#nextBtn').prop('disabled', false);
+            }
+            return;
+        }
+
+        // 普通单选题
+        selectedOption = $(this).data('idx');
+        $('.option-item').removeClass('selected');
+        $(this).addClass('selected');
+        $('#nextBtn').prop('disabled', false);
+    });
+
+    // ===== 上一题 =====
+    $('#prevBtn').on('click', function() {
+        if (currentQ === 0) return;
+
+        saveCurrentAnswer();
+
+        // 如果当前是第5题且处于step2，回退到step1（不跳出第5题）
+        if (currentQ === 4 && q5Step === 2 && q5Step2Sel === -1) {
+            // 用户还没完成step2，返回step1
+            q5Step = 1;
+            q5Step1Sel = -1;
+            $('#optionsContainer').empty();
+            renderQ5();
+            $('#nextBtn').prop('disabled', true);
+            return;
+        }
+
+        currentQ--;
+        selectedOption = -1;
+        q5Step = 1;
+        q5Step1Sel = -1;
+        q5Step2Sel = -1;
+        loadQuestion(currentQ);
+    });
+
+    // ===== 保存当前答案 =====
+    function saveCurrentAnswer() {
+        if (currentQ === 4) {
+            if (q5Step1Sel !== -1 && q5Step2Sel !== -1) {
+                answers[4] = { step1: q5Step1Sel, step2: q5Step2Sel };
+            } else if (q5Step1Sel !== -1) {
+                answers[4] = { step1: q5Step1Sel, step2: -1 };
+            }
+        } else {
+            if (selectedOption !== -1) {
+                answers[currentQ] = selectedOption;
+            }
+        }
+    }
+
+    // ===== 下一题 =====
+    $('#nextBtn').on('click', function() {
+        if (currentQ === 4) {
+            // 第5题：需要先完成两步
+            if (q5Step === 1) return; // 还没选第一步
+            if (q5Step2Sel === -1) return; // 还没选第二步
+            answers[4] = { step1: q5Step1Sel, step2: q5Step2Sel };
+            showSummary();
+            return;
+        }
+
+        if (selectedOption === -1) return;
+        answers[currentQ] = selectedOption;
+
+        if (currentQ < questions.length - 1) {
+            currentQ++;
+            selectedOption = -1;
+            loadQuestion(currentQ);
+        } else {
+            showSummary();
+        }
+    });
+
+    // ===== 显示总结 =====
+    function showSummary() {
+        $('#questionPage').hide();
+        $('#summaryPage').show();
+
+        // 第1题
+        var a0 = answers[0];
+        $('#summaryQ1').html(
+            '<h3>有没有子女星</h3>' +
+            '<div class="answer-label">您的选择</div>' +
+            '<div class="answer-value">' + questions[0].options[a0].text + '</div>' +
+            '<div class="result-text">' + questions[0].options[a0].result + '</div>'
+        );
+
+        // 第2题
+        var a1 = answers[1];
+        $('#summaryQ2').html(
+            '<h3>子女星旺衰</h3>' +
+            '<div class="answer-label">您的选择</div>' +
+            '<div class="answer-value">' + questions[1].options[a1].text + '</div>' +
+            '<div class="result-text">' + questions[1].options[a1].result + '</div>'
+        );
+
+        // 第3题
+        var a2 = answers[2];
+        $('#summaryQ3').html(
+            '<h3>子女星的喜忌</h3>' +
+            '<div class="answer-label">您的选择</div>' +
+            '<div class="answer-value">' + questions[2].options[a2].text + '</div>' +
+            '<div class="result-text">' + questions[2].options[a2].result + '</div>'
+        );
+
+        // 第4题
+        var a3 = answers[3];
+        $('#summaryQ4').html(
+            '<h3>子女宫的喜忌</h3>' +
+            '<div class="answer-label">您的选择</div>' +
+            '<div class="answer-value">' + questions[3].options[a3].text + '</div>' +
+            '<div class="result-text">' + questions[3].options[a3].result + '</div>'
+        );
+
+        // 第5题
+        var q5 = questions[4];
+        var step1Text = q5.step1Options[answers[4].step1].text;
+        var step2Text = q5.step2Options[answers[4].step2].text;
+        var detailResult = resultMap[step2Text][step1Text];
+
+        $('#summaryQ5').html(
+            '<h3>子女星与子女宫的互动</h3>' +
+            '<div class="answer-label">喜忌组合</div>' +
+            '<div class="answer-value">' + step1Text + '</div>' +
+            '<div class="answer-label" style="margin-top:12px;">互动方式</div>' +
+            '<div class="answer-value">' + step2Text + '</div>' +
+            '<div class="result-text" style="margin-top:8px;">' + detailResult + '</div>'
+        );
+    }
+
+    // ===== 重新测算 =====
+    $('#restartBtn').on('click', function() {
+        $('#summaryPage').hide();
+        $('#startPage').show();
+        currentQ = 0;
+        answers = [];
+        selectedOption = -1;
+        q5Step = 1;
+        q5Step1Sel = -1;
+        q5Step2Sel = -1;
+    });
+
+});
+</script>
+
+</body>
+</html>
