@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学历与学业运势分析</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .question-block {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .question-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: block;
+        }
+        .options label {
+            display: block;
+            margin-bottom: 10px;
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .options label:hover {
+            background-color: #f9f9f9;
+        }
+        .options input[type="radio"] {
+            margin-right: 10px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #2c3e50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #34495e;
+        }
+        .hidden {
+            display: none;
+        }
+        .result-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 5px solid #2c3e50;
+            margin-bottom: 15px;
+        }
+        .final-text-block {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+            font-size: 0.9em;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="quiz-page">
+        <h1>学业运势分析测试</h1>
+        <p style="text-align: center; color: #666;">请依次选择每一项，系统将为您生成分析结果。</p>
+        
+        <form id="analysis-form">
+            <!-- 题目将通过JS动态生成 -->
+        </form>
+        <button class="btn" id="submit-btn">生成分析结果</button>
+    </div>
+
+    <div id="result-page" class="hidden">
+        <h1>分析结果总结</h1>
+        <div id="result-content">
+            <!-- 结果将通过JS动态生成 -->
+        </div>
+
+        <div class="final-text-block">
+            <h2>大运兑现</h2>
+            <p>重点看15-18岁 (中考、高考) 、22-24岁 (考研) 的大运流年。这步运如果引动了原局的好格局 (比如引动了伤官佩印的喜神)，叫“打通任督二脉”，超常发挥。这步运如果引动了坏格局 (比如引动了财星破印的忌神)，叫“关键时刻掉链子”，平时第一，高考落榜。</p>
+            
+            <h2>实战口诀</h2>
+            <ul>
+                <li><strong>无印不文：</strong>八字一点印星没有，或者印星死绝，别指望高学历，哪怕再聪明也是野路子。</li>
+                <li><strong>有印无官，难登金榜：</strong>只有印星没有官杀，平时成绩好，但一到大考就拉胯 (缺乏应试运气和抗压能力)。</li>
+                <li><strong>官印相生，清华北大：</strong>最正统的高学历标志，名校苗子。</li>
+                <li><strong>财多坏印，半途而废：</strong>印星本有用，被财星干掉，多半因贪玩、早恋或想赚钱而辍学。</li>
+                <li><strong>食伤制杀，偏门高才：</strong>没有印星，全靠食伤去克制官杀。这种人是解题天才，极其聪明，但不爱背书，往往是理科尖子、竞赛保送生，或者走技术突破路线。</li>
+            </ul>
+        </div>
+        
+        <button class="btn" onclick="location.reload()">重新测试</button>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // 1. 定义题目数据
+    // 注意：根据文档逻辑，这里构建了主要的分类维度
+    const questions = [
+        {
+            id: "q1",
+            title: "有没有印星",
+            options: [
+                "有印星，为喜神，有力",
+                "有印星，为忌神，有力",
+                "无印星"
+            ]
+        },
+        {
+            id: "q2",
+            title: "月柱—读书环境",
+            options: [
+                "月柱被刑、冲、克",
+                "月柱没有受伤"
+            ]
+        },
+        {
+            id: "q3",
+            title: "正统教育的适配度 (官印相生)",
+            options: [
+                "官旺印旺",
+                "官旺印弱",
+                "官弱印旺",
+                "官弱印弱"
+            ]
+        },
+        {
+            id: "q4",
+            title: "考场心理状态与输出障碍 (枭神夺食)",
+            options: [
+                "偏印旺食神旺",
+                "偏印旺食神弱",
+                "偏印弱食神旺",
+                "偏印弱食神弱"
+            ]
+        },
+        {
+            id: "q5",
+            title: "天赋的驯化与学术深度 (伤官配印)",
+            options: [
+                "伤官旺印星旺",
+                "伤官旺印星弱",
+                "伤官弱印星旺",
+                "伤官弱印星弱"
+            ]
+        },
+        {
+            id: "q6",
+            title: "现实诱惑与辍学风险 (财星破印)",
+            options: [
+                "财旺印旺",
+                "财旺印弱",
+                "财弱印旺",
+                "财弱印弱"
+            ]
+        },
+        {
+            id: "q7",
+            title: "竞争环境中的抗压韧性 (群比抗杀)",
+            options: [
+                "比劫旺七杀旺",
+                "比劫旺七杀弱",
+                "比劫弱七杀旺",
+                "比劫弱七杀弱"
+            ]
+        }
+    ];
+
+    // 2. 渲染题目
+    const $form = $('#analysis-form');
+    questions.forEach(function(q) {
+        let html = '<div class="question-block">';
+        html += '<span class="question-title">' + q.title + '</span>';
+        html += '<div class="options">';
+        
+        q.options.forEach(function(opt, index) {
+            // 使用单引号包裹属性值，双引号包裹整体字符串
+            html += "<label><input type='radio' name='" + q.id + "' value='" + opt + "'> " + opt + "</label>";
+        });
+        
+        html += '</div></div>';
+        $form.append(html);
+    });
+
+    // 3. 处理提交与结果生成
+    $('#submit-btn').click(function() {
+        let isValid = true;
+        let resultHtml = '';
+
+        // 遍历所有问题，检查是否选择
+        questions.forEach(function(q) {
+            const val = $('input[name="' + q.id + '"]:checked').val();
+            if (!val) {
+                isValid = false;
+                return; // 跳出当前循环
+            }
+            
+            // 获取对应的文本描述 (模拟逻辑)
+            const text = getResultText(q.id, val);
+            
+            resultHtml += "<div class='result-section'>";
+            resultHtml += "<h3>" + q.title + "</h3>";
+            resultHtml += "<p><strong>选择：</strong>" + val + "</p>";
+            resultHtml += "<p><strong>分析：</strong>" + text + "</p>";
+            resultHtml += "</div>";
+        });
+
+        if (!isValid) {
+            alert("请完成所有题目后再提交！");
+            return;
+        }
+
+        // 显示结果页
+        $('#result-content').html(resultHtml);
+        $('#quiz-page').addClass('hidden');
+        $('#result-page').removeClass('hidden');
+        $('body').animate({scrollTop: 0}, 500);
+    });
+
+    // 4. 模拟结果文本生成函数
+    // 注意：由于文档未提供所有组合的具体文本，此处根据文档逻辑进行了分类归纳
+    function getResultText(qId, val) {
+        // 这里可以根据具体的 qId 和 val 返回文档中对应的长文本
+        // 为了演示，这里返回基于关键词的模拟文本
+        
+        if (qId === 'q1') {
+            if (val.includes('喜神')) return "代表吸收、记忆、证书、学校、极度适配应试教育。看书能看进去，坐得住冷板凳，理解力强。起码是重本 (211/985)起步，大概率有硕士及以上学历。";
+            if (val.includes('忌神')) return "学历往往不高，或者学历拿得非常吃力 (复读过、三本/大专)。不是不聪明，而是一看书就头疼、困倦，或者家里逼着，导致严重厌学。";
+            return "或者印星彻底死了，基本与高学历 (本科以上)无缘。";
+        }
+        
+        if (qId === 'q2') {
+            if (val.includes('刑、冲、克')) return "在青少年时期家庭动荡、父母离婚、或者频繁转学。";
+            return "学习轨迹是按部就班，没有因为外部原因辍学或转学。";
+        }
+
+        if (qId === 'q3') {
+            if (val === '官旺印旺') return "985/211甚至清北的苗子。顶尖学霸型。极其适应应试教育，越高压越兴奋。";
+            if (val === '官旺印弱') return "能考上不错的学校 (一本/211)，但过程极其辛苦，属于“汗水型学霸”。靠的是“笨鸟先飞”、“题海战术”。";
+            if (val === '官弱印旺') return "温室学霸型。爱学习，但抗压能力极差。在普通学校是第一名，一旦到了重点高中会被竞争对手直接逼哭。";
+            return "没什么大志向，也不觉得学习痛苦。顺理成章地考个普通本科/大专，按部就班找个普通工作。";
+        }
+
+        // 其他问题的通用逻辑示例
+        return "根据您选择的 [" + val + "] 组合，系统判定该配置对学业有特定影响。具体表现为：在对应的运势流年中，该特质将决定考试的发挥程度与心理状态。";
+    }
+});
+</script>
+
+</body>
+</html>
