@@ -1,0 +1,531 @@
+<script setup lang="ts">
+import { ref, reactive, computed } from 'vue'
+
+const stage = ref<'question' | 'result'>('question')
+const currentQ = ref(0)
+const answers = reactive<Record<string, string>>({})
+
+const questions: { id: string, title: string, options: { label: string, value: string }[] }[] = [
+  {
+    id: 'yinxing',
+    title: '有没有印星？',
+    options: [
+      { label: '有印星，为喜神，有力', value: 'yinxing_xi' },
+      { label: '有印星，为忌神，有力', value: 'yinxing_ji' },
+      { label: '无印星', value: 'yinxing_wu' }
+    ]
+  },
+  {
+    id: 'yuezhuhuanjing',
+    title: '月柱（读书环境）的状态如何？',
+    options: [
+      { label: '月柱被刑、冲、克', value: 'yuezhuhuanjing_shang' },
+      { label: '月柱没有受伤', value: 'yuezhuhuanjing_wushang' }
+    ]
+  },
+  {
+    id: 'guanyin_xiji',
+    title: '正统教育的适配度（官印相生）',
+    options: [
+      { label: '官喜印喜', value: 'guan_xi_yin_xi' },
+      { label: '官忌印喜', value: 'guan_ji_yin_xi' },
+      { label: '官喜印忌', value: 'guan_xi_yin_ji' },
+      { label: '官忌印忌', value: 'guan_ji_yin_ji' },
+      { label: '没有官印相生的十神组合', value: 'guan_yin_wu' }
+    ]
+  },
+  {
+    id: 'guanyin_wangruo',
+    title: '官星与印星的旺衰如何？',
+    options: [
+      { label: '官旺印旺', value: 'guan_wang_yin_wang' },
+      { label: '官旺印弱', value: 'guan_wang_yin_ruo' },
+      { label: '官弱印旺', value: 'guan_ruo_yin_wang' },
+      { label: '官弱印弱', value: 'guan_ruo_yin_ruo' }
+    ]
+  },
+  {
+    id: 'liaoshenduoshi_xiji',
+    title: '考场心理状态与输出障碍（枭神夺食）',
+    options: [
+      { label: '偏印喜食神喜', value: 'pianyin_xi_shishen_xi' },
+      { label: '偏印喜食神忌', value: 'pianyin_xi_shishen_ji' },
+      { label: '偏印忌食神喜', value: 'pianyin_ji_shishen_xi' },
+      { label: '偏印忌食神忌', value: 'pianyin_ji_shishen_ji' },
+      { label: '没有枭神夺食的十神组合', value: 'liaoshen_wu' }
+    ]
+  },
+  {
+    id: 'liaoshen_wangruo',
+    title: '偏印与食神的旺衰如何？',
+    options: [
+      { label: '偏印旺食神旺', value: 'pianyin_wang_shishen_wang' },
+      { label: '偏印旺食神弱', value: 'pianyin_wang_shishen_ruo' },
+      { label: '偏印弱食神旺', value: 'pianyin_ruo_shishen_wang' },
+      { label: '偏印弱食神弱', value: 'pianyin_ruo_shishen_ruo' }
+    ]
+  },
+  {
+    id: 'shishangzhisha',
+    title: '高压下的爆发力与解题技巧（食伤制杀）',
+    options: [
+      { label: '食伤喜七杀喜', value: 'shishang_xi_qisha_xi' },
+      { label: '食伤喜七杀忌', value: 'shishang_xi_qisha_ji' },
+      { label: '食伤忌七杀喜', value: 'shishang_ji_qisha_xi' },
+      { label: '食伤忌七杀忌', value: 'shishang_ji_qisha_ji' },
+      { label: '没有食神制杀的十神组合', value: 'shishang_qisha_wu' }
+    ]
+  },
+  {
+    id: 'shishangzhisha_wangruo',
+    title: '食伤与七杀的旺衰如何？',
+    options: [
+      { label: '食伤旺七杀旺', value: 'shishang_wang_qisha_wang' },
+      { label: '食伤旺七杀弱', value: 'shishang_wang_qisha_ruo' },
+      { label: '食伤弱七杀旺', value: 'shishang_ruo_qisha_wang' },
+      { label: '食伤弱七杀弱', value: 'shishang_ruo_qisha_ruo' }
+    ]
+  },
+  {
+    id: 'shangguan_yinxing',
+    title: '天赋的驯化与学术深度（伤官配印）',
+    options: [
+      { label: '伤官喜印星喜', value: 'shangguan_xi_yin_xi' },
+      { label: '伤官喜印星忌', value: 'shangguan_xi_yin_ji' },
+      { label: '伤官忌印星喜', value: 'shangguan_ji_yin_xi' },
+      { label: '伤官忌印星忌', value: 'shangguan_ji_yin_ji' },
+      { label: '没有伤官配印的十神组合', value: 'shangguan_yin_wu' }
+    ]
+  },
+  {
+    id: 'shangguan_yinxing_wangruo',
+    title: '伤官与印星的旺衰如何？',
+    options: [
+      { label: '伤官旺印星旺', value: 'shangguan_wang_yin_wang' },
+      { label: '伤官旺印星弱', value: 'shangguan_wang_yin_ruo' },
+      { label: '伤官弱印星旺', value: 'shangguan_ruo_yin_wang' },
+      { label: '伤官弱印星弱', value: 'shangguan_ruo_yin_ruo' }
+    ]
+  },
+  {
+    id: 'qunbikangsha',
+    title: '竞争环境中的抗压韧性（群比抗杀）',
+    options: [
+      { label: '比劫喜七杀喜', value: 'bijie_xi_qisha_xi' },
+      { label: '比劫喜七杀忌', value: 'bijie_xi_qisha_ji' },
+      { label: '比劫忌七杀喜', value: 'bijie_ji_qisha_xi' },
+      { label: '比劫忌七杀忌', value: 'bijie_ji_qisha_ji' },
+      { label: '没有群比抗杀的十神组合', value: 'qunbi_wu' }
+    ]
+  },
+  {
+    id: 'qunbikangsha_wangruo',
+    title: '比劫与七杀的旺衰如何？',
+    options: [
+      { label: '比劫旺七杀旺', value: 'bijie_wang_qisha_wang' },
+      { label: '比劫旺七杀弱', value: 'bijie_wang_qisha_ruo' },
+      { label: '比劫弱七杀旺', value: 'bijie_ruo_qisha_wang' },
+      { label: '比劫弱七杀弱', value: 'bijie_ruo_qisha_ruo' }
+    ]
+  },
+  {
+    id: 'caixingpoyin',
+    title: '现实诱惑与辍学风险（财星破印）',
+    options: [
+      { label: '财星喜印星喜', value: 'cai_xi_yin_xi' },
+      { label: '财星喜印星忌', value: 'cai_xi_yin_ji' },
+      { label: '财星忌印星喜', value: 'cai_ji_yin_xi' },
+      { label: '财星忌印星忌', value: 'cai_ji_yin_ji' },
+      { label: '没有财星破印的十神组合', value: 'cai_yin_wu' }
+    ]
+  },
+  {
+    id: 'caixingpoyin_wangruo',
+    title: '财星与印星的旺衰如何？',
+    options: [
+      { label: '财旺印旺', value: 'cai_wang_yin_wang' },
+      { label: '财旺印弱', value: 'cai_wang_yin_ruo' },
+      { label: '财弱印旺', value: 'cai_ruo_yin_wang' },
+      { label: '财弱印弱', value: 'cai_ruo_yin_ruo' }
+    ]
+  }
+]
+
+const skipMap: Record<string, string> = {
+  'guanyin_xiji': 'guan_yin_wu',
+  'liaoshenduoshi_xiji': 'liaoshen_wu',
+  'shishangzhisha': 'shishang_qisha_wu',
+  'shangguan_yinxing': 'shangguan_yin_wu',
+  'qunbikangsha': 'qunbi_wu',
+  'caixingpoyin': 'cai_yin_wu'
+}
+
+const skipNextMap: Record<string, string> = {
+  'guanyin_xiji': 'guanyin_wangruo',
+  'liaoshenduoshi_xiji': 'liaoshen_wangruo',
+  'shishangzhisha': 'shishangzhisha_wangruo',
+  'shangguan_yinxing': 'shangguan_yinxing_wangruo',
+  'qunbikangsha': 'qunbikangsha_wangruo',
+  'caixingpoyin': 'caixingpoyin_wangruo'
+}
+
+function getActiveQuestions() {
+  const active: typeof questions = []
+  let i = 0
+  while (i < questions.length) {
+    const q = questions[i]
+    active.push(q)
+    if (skipMap[q.id] && answers[q.id] === skipMap[q.id] && questions[i + 1]?.id === skipNextMap[q.id]) {
+      i += 2
+    } else {
+      i++
+    }
+  }
+  return active
+}
+
+const activeQuestions = computed(() => getActiveQuestions())
+const total = computed(() => activeQuestions.value.length)
+const progressPct = computed(() => total.value > 0 ? ((currentQ.value) / total.value * 100).toFixed(0) : '0')
+const currentQuestion = computed(() => activeQuestions.value[currentQ.value])
+
+function selectOption(val: string) {
+  const q = currentQuestion.value
+  if (!q) return
+  answers[q.id] = val
+}
+
+function prevQ() {
+  if (currentQ.value > 0) currentQ.value--
+}
+
+function nextQ() {
+  const q = currentQuestion.value
+  if (!q || !answers[q.id]) { alert('请先选择一个选项'); return }
+  if (currentQ.value < total.value - 1) {
+    currentQ.value++
+  } else {
+    stage.value = 'result'
+  }
+}
+
+// Results
+const results_yinxing: Record<string, { tag: string, text: string }> = {
+  yinxing_xi: { tag: '有印星，为喜神，有力', text: '有印星，为喜神，有力。学业根基深厚，有贵人帮扶，学习能力强，记忆力好，适合系统性深造。' },
+  yinxing_ji: { tag: '有印星，为忌神，有力', text: '有印星，为忌神，有力。印星过旺反成负担，容易依赖他人、缺乏独立思考和行动力。' },
+  yinxing_wu: { tag: '无印星', text: '无印星。学业上缺乏贵人帮扶，更多依靠自身拼搏，独立自主但过程较为辛苦。' }
+}
+
+const results_yuezhuhuanjing: Record<string, { tag: string, text: string }> = {
+  yuezhuhuanjing_shang: { tag: '月柱被刑、冲、克', text: '在青少年时期家庭动荡、父母离婚、或者频繁转学。学习环境不稳定，外部因素严重干扰学业进程。' },
+  yuezhuhuanjing_wushang: { tag: '月柱没有受伤', text: '学习轨迹按部就班，没有因为外部原因辍学或转学。成长环境稳定，能够专注于学业发展。' }
+}
+
+const guanyin_results: Record<string, { tag: string, text: string }> = {
+  'guan_xi_yin_xi_guan_wang_yin_wang': { tag: '官喜印喜 + 官旺印旺', text: '顶尖学霸型。极其适应应试教育，越高压越兴奋。老师越严格成绩越好，逢大考必超常发挥，985/211甚至清北的苗子。' },
+  'guan_xi_yin_xi_guan_wang_yin_ruo': { tag: '官喜印喜 + 官旺印弱', text: '极度渴望好成绩，目标感极强（官旺）。但脑力、悟性或记忆力稍显不足（印弱）。靠的是"笨鸟先飞"、"题海战术"和超强的意志力。能考上不错的学校（一本/211），但过程极其辛苦，属于"汗水型学霸"。' },
+  'guan_xi_yin_xi_guan_ruo_yin_wang': { tag: '官喜印喜 + 官弱印旺', text: '温室学霸型。爱学习，但抗压能力极差。在普通学校是第一名，一旦到了重点高中/尖子班（官杀压力骤增），会被竞争对手直接逼哭，成绩断崖式下跌。' },
+  'guan_xi_yin_xi_guan_ruo_yin_ruo': { tag: '官喜印喜 + 官弱印弱', text: '没什么大志向，也不觉得学习痛苦。老师教什么就学什么，随大流，不拔尖也不垫底。顺理成章地考个普通本科/大专，按部就班找个普通工作，对学历没有执念。' },
+  'guan_ji_yin_xi_guan_wang_yin_wang': { tag: '官忌印喜 + 官旺印旺', text: '平时自己看书什么都懂，堪称天才。但一到中考、高考这种高压考场（官旺忌神发作），那种规矩和氛围直接让他生理性排斥，大脑瞬间死机、肠胃痉挛、手心出汗。严重低于其真实智商。明明有清北的脑子，最后只考了个普通一本甚至二本。' },
+  'guan_ji_yin_xi_guan_wang_yin_ruo': { tag: '官忌印喜 + 官旺印弱', text: '自己其实学不进太多东西（印弱），但面对外界的高压逼迫（官旺忌神），内心极度抗拒、焦虑，甚至出现神经衰弱。在高压下容易崩溃，可能连普通高中都考不上，或者患上严重的考前抑郁症。' },
+  'guan_ji_yin_xi_guan_ruo_yin_wang': { tag: '官忌印喜 + 官弱印旺', text: '没人逼他，他就在家狂看各种杂书、冷门知识。一旦让他去考试、走流程，他就觉得俗气、恶心。正统学历往往不高（可能本科都费劲，因为不想考）。但肚子里全是墨水，可能在某些小众圈子里是"大神"，或者靠写网文、研究玄学谋生。' },
+  'guan_ji_yin_xi_guan_ruo_yin_ruo': { tag: '官忌印喜 + 官弱印弱', text: '不喜欢规矩，也学不进东西。遇到轻松的老师还能混混，遇到稍微严一点的就直接摆烂。很难在体制内教育体系里存活，大概率早早辍学，去学个手艺或者进厂。' },
+  'guan_xi_yin_ji_guan_wang_yin_wang': { tag: '官喜印忌 + 官旺印旺', text: '为了考上好大学，强行压抑自己对书本的厌恶。脑力其实够（印旺），但看一行字就像受刑。靠打鸡血、喝咖啡、自我催眠来逼自己背书。往往能考上好学校（因为目标感极强），但大学一毕业，立刻把书全烧了，这辈子绝不碰本专业知识。' },
+  'guan_xi_yin_ji_guan_wang_yin_ruo': { tag: '官喜印忌 + 官旺印弱', text: '目标极其远大（非985不上），但一看书就困，脑力完全跟不上（印弱忌神）。靠"假努力"感动自己，天天熬夜但其实啥也没记住。高考惨败。然后疯狂复读，年复一年，每次都差一口气，最后勉强上个大专或三本。' },
+  'guan_xi_yin_ji_guan_ruo_yin_wang': { tag: '官喜印忌 + 官弱印旺', text: '想要个好文凭找个好工作（官喜），但极度讨厌死记硬背。由于外界压力不大（官弱），他会把聪明才智（印旺）全用在"找捷径、抄作业、研究应试技巧"上，绝不真学。可能混个还不错的文凭，但肚子里全是草包，属于"高学历的废人"。' },
+  'guan_xi_yin_ji_guan_ruo_yin_ruo': { tag: '官喜印忌 + 官弱印弱', text: '只想要个毕业证当敲门砖，对知识毫无敬畏，脑力也懒得动。能抄就抄，能水就水。托关系的预科、花钱买的水硕，或者勉强混个最底层的文凭，主打一个"经历过"。' },
+  'guan_ji_yin_ji_guan_wang_yin_wang': { tag: '官忌印忌 + 官旺印旺', text: '脑子其实挺聪明（印旺），但极度反叛。老师越管他（官旺），他越要对着干。不仅不学，还要带头捣乱，甚至砸黑板、逃学、打架。学历极低。初中或高中就被迫辍学，或者被学校开除。但如果走向社会，因为脑子好且胆子大，可能成为草莽英雄。' },
+  'guan_ji_yin_ji_guan_wang_yin_ruo': { tag: '官忌印忌 + 官旺印弱', text: '既笨（印弱），又面对极大的压力（官旺忌神）。这是学校里最底层的存在，被老师骂、被同学笑，彻底丧失自尊。完全无法应付考试，甚至连初中都读不完，带着严重的心理创伤离开学校。' },
+  'guan_ji_yin_ji_guan_ruo_yin_wang': { tag: '官忌印忌 + 官弱印旺', text: '脑子好使，但既不想出人头地，也讨厌看书。坐在教室最后一排，上课睡觉，下课打游戏，老师不管他，他也不惹事。靠着小聪明混个初中/中专毕业，然后去干一些不需要学历但需要一点脑力的活（比如倒卖、网游代练等）。' },
+  'guan_ji_yin_ji_guan_ruo_yin_ruo': { tag: '官忌印忌 + 官弱印弱', text: '零动力，零能力，零压力。对一切事物都提不起兴趣，像个木头人一样坐在教室里，直至消失。文盲或半文盲状态，完全被教育体系遗忘。' },
+  'guan_yin_wu': { tag: '没有官印相生的十神组合', text: '命局中没有官印相生的组合，正统教育的适配度不受官印影响。学业表现主要取决于其他十神组合的配合。' }
+}
+
+const liaoshen_results: Record<string, { tag: string, text: string }> = {
+  'pianyin_xi_shishen_xi_pianyin_wang_shishen_wang': { tag: '偏印喜食神喜 + 偏印旺食神旺', text: '满级天才碰上满级偏执。你脑子里构建的解题思路比标准答案高级十倍，但你在考场上花了半小时把思路写完，发现才得了2分步骤分，因为没写公式。极度不甘心。平时能辅导老师，大考必然严重翻车，最后去了一个极其普通的学校。' },
+  'pianyin_xi_shishen_xi_pianyin_wang_shishen_ruo': { tag: '偏印喜食神喜 + 偏印旺食神弱', text: '想法极多极深（枭旺），但一动笔就卡壳（食弱）。典型的"眼高手低"，看懂了十分，只能写出三分。永远觉得时间不够用，大题永远写不完。成绩中上，但离顶尖差一口气。' },
+  'pianyin_xi_shishen_xi_pianyin_ruo_shishen_wang': { tag: '偏印喜食神喜 + 偏印弱食神旺', text: '灵气逼人（食旺），偶尔会钻个牛角尖（枭弱）。但因为你枭神不旺，你能很快意识到"这样写拿不到分"，迅速切回标准模式。真正的学霸。虽然答题有时不走寻常路，但总能踩中得分点，轻松考入名校。' },
+  'pianyin_xi_shishen_xi_pianyin_ruo_shishen_ruo': { tag: '偏印喜食神喜 + 偏印弱食神弱', text: '偶尔胡思乱想，灵气一般。虽然叫枭神夺食，但力量都很弱，症状不明显。顺其自然的普通本科，不出彩也不拉胯。' },
+  'pianyin_xi_shishen_ji_pianyin_wang_shishen_wang': { tag: '偏印喜食神忌 + 偏印旺食神旺', text: '极度沉迷于非主流知识（枭旺），且极度排斥主流表达（食旺被夺变负）。比如数学考场上，你用自己发明的符号体系写满整张卷子，阅卷老师一个字都看不懂，直接0分。除了你感兴趣的那一科能拿满分，其他科全是个位数。正统学历极低，大概率被当成"精神病"或退学。' },
+  'pianyin_xi_shishen_ji_pianyin_wang_shishen_ruo': { tag: '偏印喜食神忌 + 偏印旺食神弱', text: '满脑子宇宙起源、外星文明（枭旺），但你根本写不出一篇完整的议论文（食弱）。完全活在平行宇宙，拒绝与现实世界对话。彻底无法适应学校，可能初中就辍学，在家闭门造车。' },
+  'pianyin_xi_shishen_ji_pianyin_ruo_shishen_wang': { tag: '偏印喜食神忌 + 偏印弱食神旺', text: '对冷门知识有点兴趣（枭弱），但其实肚子里没货，主流表达能力也很差（食忌）。喜欢在卷子上写一些看似高深、实则不知所云的废话。老师最讨厌的类型。觉得你"又笨又爱装"，学历卡在专科或本科边缘。' },
+  'pianyin_xi_shishen_ji_pianyin_ruo_shishen_ruo': { tag: '偏印喜食神忌 + 偏印弱食神弱', text: '既没有偏门深度，也没有主流表达，两者都在低位互耗。底层学渣，混日子等毕业。' },
+  'pianyin_ji_shishen_xi_pianyin_wang_shishen_wang': { tag: '偏印忌食神喜 + 偏印旺食神旺', text: '平时极其聪明（食旺），但一进考场，那种高压环境瞬间触发你病态的强迫症和自我怀疑（枭旺忌神爆发）。你的灵气被自己的胡思乱想瞬间吸干。典型的"强迫性考场瘫痪"。手心出汗、大脑空白、笔尖发抖，最后交白卷或乱涂。真实水平985，实际考分二本。' },
+  'pianyin_ji_shishen_xi_pianyin_wang_shishen_ruo': { tag: '偏印忌食神喜 + 偏印旺食神弱', text: '本来就不太会表达（食弱），一遇到考试，病态的紧张感（枭旺）直接把仅存的一点思路掐断。严重的考试焦虑症，可能需要吃稳心药物才能上考场，学历被心理素质严重拖后腿。' },
+  'pianyin_ji_shishen_xi_pianyin_ruo_shishen_wang': { tag: '偏印忌食神喜 + 偏印弱食神旺', text: '灵气十足（食旺），但偶尔会犯傻、审错题（枭弱忌神）。比如把"不正确"看成"正确"。永远是"如果不错那道选择题，我就进清北了"的人。成绩极好，但总留有遗憾。' },
+  'pianyin_ji_shishen_xi_pianyin_ruo_shishen_ruo': { tag: '偏印忌食神喜 + 偏印弱食神弱', text: '没多少灵气，偶尔有点小紧张，波澜不惊。默默无闻的普通学生。' },
+  'pianyin_ji_shishen_ji_pianyin_wang_shishen_wang': { tag: '偏印忌食神忌 + 偏印旺食神旺', text: '极度矛盾。明明不会做（食忌），但脑子里又停不下来地胡思乱想、自我否定（枭旺忌），最后转化为极度的暴躁。课堂上的破坏分子，可能直接把卷子撕了，初中就被迫分流。' },
+  'pianyin_ji_shishen_ji_pianyin_wang_shishen_ruo': { tag: '偏印忌食神忌 + 偏印旺食神弱', text: '脑子一团浆糊（食弱），内心充满"我为什么这么笨"的无尽内耗（枭旺忌）。这不是不学，这是学不来导致的生理性抑郁。极难完成学业，甚至需要心理干预，彻底远离学校。' },
+  'pianyin_ji_shishen_ji_pianyin_ruo_shishen_wang': { tag: '偏印忌食神忌 + 偏印弱食神旺', text: '脑子转得快但不想学正经的（食旺忌），又没有深度的内耗（枭弱）。表现为纯粹的坐不住、贪玩。调皮捣蛋的学渣，混个初中毕业就去混社会。' },
+  'pianyin_ji_shishen_ji_pianyin_ruo_shishen_ruo': { tag: '偏印忌食神忌 + 偏印弱食神弱', text: '零灵气，零内耗，零动力。坐在那里像块木头。随波逐流的边缘人。' },
+  'liaoshen_wu': { tag: '没有枭神夺食的十神组合', text: '命局中没有枭神夺食的组合，考场心理状态不受枭神干扰。考试发挥主要取决于其他十神组合的影响。' }
+}
+
+const shishangzhisha_results: Record<string, { tag: string, text: string }> = {
+  'shishang_xi_qisha_xi_shishang_wang_qisha_wang': { tag: '食伤喜七杀喜 + 食伤旺七杀旺', text: '满级压力碰上满级智商。平时看着懒散，一进高考考场，倒计时的铃声一响，他的眼睛会发光。巨大的危机感瞬间激活全部脑细胞，解题速度和准确率呈指数级爆发。顶级名校。永远是那种"平时不拔尖，大考超常发挥"的传奇。' },
+  'shishang_xi_qisha_xi_shishang_wang_qisha_ruo': { tag: '食伤喜七杀喜 + 食伤旺七杀弱', text: '智商极高，但考试太简单、缺乏刺激（杀弱）。他觉得这试卷侮辱了他，导致他审题不仔细，或者故意用最复杂的方法解题，最后因为"看错小数点"丢分。实力绝对清北，但因为缺乏敬畏心，往往只考个普通985，带着遗憾离场。' },
+  'shishang_xi_qisha_xi_shishang_ruo_qisha_wang': { tag: '食伤喜七杀喜 + 食伤弱七杀旺', text: '纯粹的智商不算最顶（食弱），但面对地狱级难度的卷子（杀旺），他展现出了惊人的胆识。不硬磕，专找阅卷规则的漏洞，用最取巧的套路拿分。极其惊艳的"黑马"，靠应试策略冲进名校。' },
+  'shishang_xi_qisha_xi_shishang_ruo_qisha_ruo': { tag: '食伤喜七杀喜 + 食伤弱七杀弱', text: '没什么大起大落，心理素质好，脑子够用，平稳度过。顺理成章的优质一本。' },
+  'shishang_xi_qisha_ji_shishang_wang_qisha_wang': { tag: '食伤喜七杀忌 + 食伤旺七杀旺', text: '极度拧巴。面对高考的残酷压制（杀旺），他觉得这是在侮辱他的智商（食旺）。他有满级能力，但偏不写！可能在卷子上写五千字批判应试教育，然后交白卷。学历极低甚至退学。但常被伯乐破格录取，或在社会上靠真本事封神。' },
+  'shishang_xi_qisha_ji_shishang_wang_qisha_ruo': { tag: '食伤喜七杀忌 + 食伤旺七杀弱', text: '智商碾压（食旺），且根本没把考试当回事（杀弱忌神），觉得无聊透顶。上课睡觉，考前看一眼课本。轻松上名校，但极度蔑视这张文凭，觉得是"蠢才玩的游戏"。' },
+  'shishang_xi_qisha_ji_shishang_ruo_qisha_wang': { tag: '食伤喜七杀忌 + 食伤弱七杀旺', text: '有点小聪明，但极度害怕残酷竞争。一到大考，他不是不会，而是本能地想逃跑，甚至装病逃避考场。因为心理抗拒大考，频频失误，学历远低于真实智商。' },
+  'shishang_xi_qisha_ji_shishang_ruo_qisha_ruo': { tag: '食伤喜七杀忌 + 食伤弱七杀弱', text: '有点小聪明，讨厌死板规矩，也没什么压力。混个还过得去的文凭，把聪明才智全用在玩乐或搞副业上。' },
+  'shishang_ji_qisha_xi_shishang_wang_qisha_wang': { tag: '食伤忌七杀喜 + 食伤旺七杀旺', text: '不会做（食忌旺），又觉得试卷在针对他（杀旺）。直接在考场上发脾气，撕卷子，或者交头接耳搞破坏。被教育体系早早抛弃，成为学校里的刺头。' },
+  'shishang_ji_qisha_xi_shishang_wang_qisha_ruo': { tag: '食伤忌七杀喜 + 食伤旺七杀弱', text: '自己其实啥也不会，但还看不上这考试（杀弱忌神），用"我只是不想学"来掩饰无能。混个初中文凭，容易成为眼高手低的键盘侠。' },
+  'shishang_ji_qisha_xi_shishang_ruo_qisha_wang': { tag: '食伤忌七杀喜 + 食伤弱七杀旺', text: '毫无还手之力（食弱），面对恐怖的压力（杀旺），直接吓破胆，一进考场就哭或者晕倒。可能因学业压力导致严重精神疾病。' },
+  'shishang_ji_qisha_xi_shishang_ruo_qisha_ruo': { tag: '食伤忌七杀喜 + 食伤弱七杀弱', text: '没能力，没压力，没自尊。坐在角落发呆，直到混到法定年龄离开学校。' },
+  'shishang_ji_qisha_ji_shishang_wang_qisha_wang': { tag: '食伤忌七杀忌 + 食伤旺七杀旺', text: '极度想赢，面对巨大压力（杀旺），他的大脑疯狂运转，但转出来的全是错得离谱的废料（食忌旺）。试图用蛮力解难题，越解越乱，手心出汗，直接在考场上崩溃。严重的高考失利，留下考试创伤后遗症（PTSD）。' },
+  'shishang_ji_qisha_ji_shishang_wang_qisha_ruo': { tag: '食伤忌七杀忌 + 食伤旺七杀弱', text: '没有外部大考压力（杀弱），但他自己给自己施压。一道题解不出，脑子疯狂乱转（食忌旺），死磕到底把脑子转成浆糊。极度内耗，成绩永远上不去，甚至因长期焦虑导致神经衰弱。' },
+  'shishang_ji_qisha_ji_shishang_ruo_qisha_wang': { tag: '食伤忌七杀忌 + 食伤弱七杀旺', text: '毫无解题技巧和灵气（食弱忌神），却被扔进地狱难度的重点班（杀旺）。拿着木棍挡坦克，除了恐惧什么都做不了。在残酷竞争中被直接碾碎，可能连普通高中都考不上。' },
+  'shishang_ji_qisha_ji_shishang_ruo_qisha_ruo': { tag: '食伤忌七杀忌 + 食伤弱七杀弱', text: '能力不行，还总瞎操心自己能不能考上。在底层挣扎，总觉得自己怀才不遇，其实只是能力不达标。' },
+  'shishang_qisha_wu': { tag: '没有食神制杀的十神组合', text: '命局中没有食伤制杀的组合，高压下的爆发力不受食伤与七杀的制约。学业表现主要取决于其他十神组合的配合。' }
+}
+
+const shangguan_results: Record<string, { tag: string, text: string }> = {
+  'shangguan_xi_yin_xi_shangguan_wang_yin_wang': { tag: '伤官喜印星喜 + 伤官旺印星旺', text: '满级智商配上满级自律。你不仅看一眼就会（伤旺），而且能静下心来把这个问题钻研到极致（印旺）。你鄙视死记硬背，但你写出的答案比标准答案还漂亮。顶尖名校的学神，且极易读到博士，成为某个领域的专家、教授或核心技术大佬。' },
+  'shangguan_xi_yin_xi_shangguan_wang_yin_ruo': { tag: '伤官喜印星喜 + 伤官旺印星弱', text: '脑子转得极快（伤旺），但坐不住冷板凳（印弱）。上课不听讲，下课不写作业，全靠考试前看一遍书。凭借极高的智商，能考上不错的大学，但很难在学术上走远（因为缺乏印星的耐力），往往本科毕业就去赚钱了。' },
+  'shangguan_xi_yin_xi_shangguan_ruo_yin_wang': { tag: '伤官喜印星喜 + 伤官弱印星旺', text: '聪明度不算顶尖（伤弱），但极其刻苦，做笔记比书上还详细（印旺）。用勤奋弥补了灵气的不足。靠着稳扎稳打，能一路读到硕士、博士，属于"大器晚成"的学术型体制内人才。' },
+  'shangguan_xi_yin_xi_shangguan_ruo_yin_ruo': { tag: '伤官喜印星喜 + 伤官弱印星弱', text: '有点小聪明，也肯听老师话。顺理成章的重本或普通一本，毫无波澜。' },
+  'shangguan_xi_yin_ji_shangguan_wang_yin_wang': { tag: '伤官喜印星忌 + 伤官旺印星旺', text: '你一眼就能看穿应试教育的荒谬（伤旺），但周围的环境、父母的逼迫、体制的枷锁极其沉重（印旺忌神）。你明明能考满分，但你偏要在卷子上写批判性文章。你清醒地看着自己被异化。极度内耗。可能考上了一所还不错的大学，但在大学期间极度抑郁，或者拿到毕业证的那一刻，把证书撕得粉碎。' },
+  'shangguan_xi_yin_ji_shangguan_wang_yin_ruo': { tag: '伤官喜印星忌 + 伤官旺印星弱', text: '聪明绝顶（伤旺），好在没什么人死逼着你走规矩（印弱）。你想学就学，不想学就出去玩。可能只考个大专或普通本科，但进入社会后，凭借极高的悟性，混得比很多名校生好。' },
+  'shangguan_xi_yin_ji_shangguan_ruo_yin_wang': { tag: '伤官喜印星忌 + 伤官弱印星旺', text: '其实没那么聪明（伤弱），但骨子里极其反叛，又遭遇了极其严苛的填鸭式教育（印旺忌神）。既学不进去，又受不了管教，容易在高中阶段就爆发严重的厌学情绪，学历止步于初中或中专。' },
+  'shangguan_xi_yin_ji_shangguan_ruo_yin_ruo': { tag: '伤官喜印星忌 + 伤官弱印星弱', text: '有点小聪明但不多，讨厌规矩但也没人管。混个文凭，主打一个"经历过"。' },
+  'shangguan_ji_yin_xi_shangguan_wang_yin_wang': { tag: '伤官忌印星喜 + 伤官旺印星旺', text: '天性极其贪玩、反叛、坐不住（伤旺忌神），但你内心有着极其可怕的求胜欲和自我约束力（印旺喜神）。你是在痛苦中强行按住自己学习的。现实版的"浪子回头金不换"。初中可能是个小混混，突然有一天醒悟，靠着恐怖的毅力，复读几年硬考上985。这种学历含金量极高，因为是你硬生生从泥潭里拔出来的。' },
+  'shangguan_ji_yin_xi_shangguan_wang_yin_ruo': { tag: '伤官忌印星喜 + 伤官旺印星弱', text: '本性贪玩（伤旺忌神），偶尔想学好（印弱喜神），但坚持不了三天。永远在立flag和打脸中循环，学历一般。' },
+  'shangguan_ji_yin_xi_shangguan_ruo_yin_wang': { tag: '伤官忌印星喜 + 伤官弱印星旺', text: '本来就不太聪明（伤弱忌神），但极其迷信"只要背死书就能改命"（印旺喜神）。靠着极其恐怖的题海战术，能考上不错的学校，但一到大学需要创新思维时，直接现原形。' },
+  'shangguan_ji_yin_xi_shangguan_ruo_yin_ruo': { tag: '伤官忌印星喜 + 伤官弱印星弱', text: '不聪明也不捣乱，老实听话。普通学历。' },
+  'shangguan_ji_yin_ji_shangguan_wang_yin_wang': { tag: '伤官忌印星忌 + 伤官旺印星旺', text: '脑子转得快但全用在歪门邪道上（伤旺忌神），面对极其压抑的学校管理（印旺忌神），彻底爆发。学校里的"黑老大"，打架斗殴，被开除，毫无学历可言。' },
+  'shangguan_ji_yin_ji_shangguan_wang_yin_ruo': { tag: '伤官忌印星忌 + 伤官旺印星弱', text: '不爱学，但脑子活泛，专门钻研怎么钻学校管理的空子。混个初中毕业，早早去社会上坑蒙拐骗。' },
+  'shangguan_ji_yin_ji_shangguan_ruo_yin_wang': { tag: '伤官忌印星忌 + 伤官弱印星旺', text: '笨（伤弱忌神），又被极其严苛的环境死死压制（印旺忌神）。不懂变通，只会死记硬背，还背不下来。可能因为学业压力导致严重的心理疾病，无法完成学业。' },
+  'shangguan_ji_yin_ji_shangguan_ruo_yin_ruo': { tag: '伤官忌印星忌 + 伤官弱印星弱', text: '没能力，没规矩，没存在感。随波逐流的底层。' },
+  'shangguan_yin_wu': { tag: '没有伤官配印的十神组合', text: '命局中没有伤官配印的组合，天赋的驯化与学术深度不受此组合影响。学业表现主要取决于其他十神组合的配合。' }
+}
+
+const qunbikangsha_results: Record<string, { tag: string, text: string }> = {
+  'bijie_xi_qisha_xi_bijie_wang_qisha_wang': { tag: '比劫喜七杀喜 + 比劫旺七杀旺', text: '满级高压碰上满级斗志。把你扔进全省最卷的重点班，别人吓得尿裤子，你却兴奋得睡不着觉。你和一群同样强悍的同学（比旺）一起，把考场当擂台，越难越兴奋。顶级名校。你是那种"卷死别人"的卷王之王，享受把强敌踩在脚下的快感。' },
+  'bijie_xi_qisha_xi_bijie_wang_qisha_ruo': { tag: '比劫喜七杀喜 + 比劫旺七杀弱', text: '斗志昂扬、精力过剩（比旺），但学校环境太轻松、题目太简单（杀弱）。你觉得不过瘾，经常带着一帮同学去挑事或者搞竞赛。实力远超当前学历，可能通过竞赛保送，或者觉得高考太简单而轻敌失误，但最终凭硬实力进名校。' },
+  'bijie_xi_qisha_xi_bijie_ruo_qisha_wang': { tag: '比劫喜七杀喜 + 比劫弱七杀旺', text: '个人的意志力和天赋并不算顶尖（比弱），但身处极度残酷的环境（杀旺）。你被周围的同学裹挟着往前跑，虽然很痛苦，但凭着一口气死死扛住没有掉队。被环境"逼"进了还不错的大学。属于"陪跑型学霸"，离开高压环境后就失去了动力。' },
+  'bijie_xi_qisha_xi_bijie_ruo_qisha_ruo': { tag: '比劫喜七杀喜 + 比劫弱七杀弱', text: '没什么斗志，也没什么压力。顺其自然的普通一本或二本。' },
+  'bijie_xi_qisha_ji_bijie_wang_qisha_wang': { tag: '比劫喜七杀忌 + 比劫旺七杀旺', text: '你能力极强，身边也有一帮兄弟（比旺）。面对变态的学校管理（杀旺忌神），你不是默默忍受，而是带头抗议、逃课、甚至联名上书。你把对抗学校当成了比考试更有趣的战斗。学历极低甚至被开除。但你是天生的领袖，在社会上会建立自己的"圈子"或公司，用另一种方式赢回来。' },
+  'bijie_xi_qisha_ji_bijie_wang_qisha_ruo': { tag: '比劫喜七杀忌 + 比劫旺七杀弱', text: '精力旺盛，喜欢跟同学较量（比旺），但看不上学校的死规矩（杀弱忌神）。带着一群人逃课去打球、打游戏，觉得那才是真正的较量。混个底层的文凭，把聪明才智全用在了"江湖义气"上。' },
+  'bijie_xi_qisha_ji_bijie_ruo_qisha_wang': { tag: '比劫喜七杀忌 + 比劫弱七杀旺', text: '有点好胜心（比喜但弱），但面对极其恐怖的高考压力（杀旺忌神），你的心理防线直接崩溃。你选择了逃避，甚至装病不去学校。因为无法承受压力而辍学或落榜。' },
+  'bijie_xi_qisha_ji_bijie_ruo_qisha_ruo': { tag: '比劫喜七杀忌 + 比劫弱七杀弱', text: '不争不抢，讨厌规矩但也不惹事。随便混个文凭。' },
+  'bijie_ji_qisha_xi_bijie_wang_qisha_wang': { tag: '比劫忌七杀喜 + 比劫旺七杀旺', text: '你极度渴望在这个残酷环境里胜出（杀旺），但你把所有同学都当成敌人（比旺忌神）。你白天假装跟别人借笔记，晚上自己偷偷熬夜。你陷入了极度的"同辈焦虑"，看到别人学你就恶心，看到别人玩你就暗喜。虽然可能卷到了好学历，但你的心理已经严重扭曲。大学一毕业，立刻拉黑所有高中同学，因为看到他们就会触发创伤后遗症。' },
+  'bijie_ji_qisha_xi_bijie_wang_qisha_ruo': { tag: '比劫忌七杀喜 + 比劫旺七杀弱', text: '没什么大压力，但你就是不服输、爱跟同学比（比旺忌神）。为了证明自己对，能在课堂上跟老师吵一节课。聪明全用在内耗上，学历平庸。' },
+  'bijie_ji_qisha_xi_bijie_ruo_qisha_wang': { tag: '比劫忌七杀喜 + 比劫弱七杀旺', text: '你没有竞争的狼性，极其讨厌跟人比（比弱忌神），却被扔进了最残酷的绞肉机（杀旺）。你看着周围人疯狂内卷，自己却像一只待宰的羔羊，充满了无力感和绝望。可能患上严重的抑郁症或躯体化疾病，高考直接失利。' },
+  'bijie_ji_qisha_xi_bijie_ruo_qisha_ruo': { tag: '比劫忌七杀喜 + 比劫弱七杀弱', text: '既没有竞争力，又害怕被比较。躲在角落里，混个最差的文凭。' },
+  'bijie_ji_qisha_ji_bijie_wang_qisha_wang': { tag: '比劫忌七杀忌 + 比劫旺七杀旺', text: '极度厌恶同学（比旺忌神），又极度恐惧高压环境（杀旺忌神）。这种极度的压抑最终会转化为极度的暴怒。可能在考场上撕卷子，或者在学校里跟人发生严重肢体冲突。以极其惨烈的方式被教育体系淘汰。' },
+  'bijie_ji_qisha_ji_bijie_wang_qisha_ruo': { tag: '比劫忌七杀忌 + 比劫旺七杀弱', text: '没什么学业压力，但在班里拉帮结派、欺负弱小（比旺忌神），被所有人孤立。混个初中毕业，成为社会底层的小混混。' },
+  'bijie_ji_qisha_ji_bijie_ruo_qisha_wang': { tag: '比劫忌七杀忌 + 比劫弱七杀旺', text: '毫无斗志（比弱忌神），面对高考倒计时（杀旺忌神），直接吓破了胆。一进考场就浑身发抖、呕吐，甚至晕倒。连考场都不敢上，彻底放弃学业。' },
+  'bijie_ji_qisha_ji_bijie_ruo_qisha_ruo': { tag: '比劫忌七杀忌 + 比劫弱七杀弱', text: '没存在感，没斗志，没压力。随风飘散，无人知晓。' },
+  'qunbi_wu': { tag: '没有群比抗杀的十神组合', text: '命局中没有群比抗杀的组合，竞争环境中的抗压韧性不受比劫与七杀的制约。学业表现主要取决于其他十神组合的配合。' }
+}
+
+const caixingpoyin_results: Record<string, { tag: string, text: string }> = {
+  'cai_xi_yin_xi_cai_wang_yin_wang': { tag: '财星喜印星喜 + 财旺印旺', text: '满级学霸脑子，配上满级搞钱欲望。你完全有能力考上清北，但在高中/大学时，你发现做小买卖、炒股或搞兼职赚的钱，比死读书来钱快太多了。你果断选择"知识变现"，用你的高智商去赚钱，把书本扔了。极高智商，但学历往往止步于高中或大学没毕业。属于"没拿到文凭，但赚到了文凭买不到的钱"。' },
+  'cai_xi_yin_xi_cai_wang_yin_ruo': { tag: '财星喜印星喜 + 财旺印弱', text: '读书的底子一般（印弱），但搞钱、贪玩的欲望极强（财旺）。书本一打开就困，一提到去哪里玩、怎么赚钱就眼睛放光。学历极低。早早辍学进入社会，开始你的"搞钱大业"。' },
+  'cai_xi_yin_xi_cai_ruo_yin_wang': { tag: '财星喜印星喜 + 财弱印旺', text: '学习能力极强（印旺），但偶尔会被物质欲望分心（财弱）。比如考研复习到一半，突然想去开个淘宝店，折腾两个月亏了，又老老实实回去背书。虽有波折，但凭底子依然能考上不错的大学，只是过程没那么纯粹。' },
+  'cai_xi_yin_xi_cai_ruo_yin_ruo': { tag: '财星喜印星喜 + 财弱印弱', text: '读书一般，对钱也有想法但没本事赚。偶尔上课走神想想发财梦，下课继续抄作业。普普通通的本科或大专，按部就班打工。' },
+  'cai_xi_yin_ji_cai_wang_yin_wang': { tag: '财星喜印星忌 + 财旺印旺', text: '脑子极好，但极度鄙视应试教育（印忌），把所有聪明才智用在校园里做生意（财旺）。比如承包食堂、倒卖假鞋、做校园贷。可能混了个文凭，但大学四年根本没上过课，毕业时已经是小老板了。' },
+  'cai_xi_yin_ji_cai_wang_yin_ruo': { tag: '财星喜印星忌 + 财旺印弱', text: '你看到课本就恶心（印弱忌神），但你对商机有着狼一般的嗅觉（财旺喜神）。你直接把课本扔进垃圾桶，16岁出门闯荡。正统学历几乎为零（初中毕业）。但在社会大学里拿下了"亿万富翁"的博士学位。' },
+  'cai_xi_yin_ji_cai_ruo_yin_wang': { tag: '财星喜印星忌 + 财弱印旺', text: '脑子够用（印旺），但内心极其抗拒（印忌），又没有足够的魄力退学去赚钱（财弱）。每天都在"不想学"和"不得不学"中痛苦挣扎。考个普通文凭，过程极其痛苦。' },
+  'cai_xi_yin_ji_cai_ruo_yin_ruo': { tag: '财星喜印星忌 + 财弱印弱', text: '不爱学，也不想发大财，只想早点打工养活自己。混个中专或高中毕业，赶紧去学门手艺或者进厂。' },
+  'cai_ji_yin_xi_cai_wang_yin_wang': { tag: '财星忌印星喜 + 财旺印旺', text: '满级学者的脑子，却生在极其贫困、负债累累的家庭（财旺忌神）。你每天坐在漏雨的屋里看书，心里想的却是"下学期学费在哪"。巨大的现实压力直接摧毁了你的专注力。大概率在初中或高中巅峰时被迫辍学打工养家。' },
+  'cai_ji_yin_xi_cai_wang_yin_ruo': { tag: '财星忌印星喜 + 财旺印弱', text: '读书天赋一般，但家庭经济压力极大（财旺忌神）。没心思看书，满脑子都是怎么帮家里还债。极早步入社会，从事底层的体力劳动。' },
+  'cai_ji_yin_xi_cai_ruo_yin_wang': { tag: '财星忌印星喜 + 财弱印旺', text: '学习极好，但家里条件一般，导致你极度缺乏安全感（财弱忌神）。你拼命读书是为了改变命运，但这种"功利性焦虑"让你活得一点也不轻松。能考上好大学，但大学期间可能因为过度兼职赚钱（怕穷）而错失了保研或更好的机会。' },
+  'cai_ji_yin_xi_cai_ruo_yin_ruo': { tag: '财星忌印星喜 + 财弱印弱', text: '学不进，也赚不到钱，但对穷有深深的恐惧。混个初中毕业，在底层挣扎。' },
+  'cai_ji_yin_ji_cai_wang_yin_wang': { tag: '财星忌印星忌 + 财旺印旺', text: '脑子好使，但极度厌学（印忌）；极其渴望物质（财旺忌神），但手段往往不正或容易破财。可能陷入校园贷、赌博，或者为了搞快钱走上歪路。学历极低，甚至可能因为违法犯罪而失去自由。' },
+  'cai_ji_yin_ji_cai_wang_yin_ruo': { tag: '财星忌印星忌 + 财旺印弱', text: '没文化（印弱），但满脑子搞钱、混社会的欲望（财旺忌神）。在学校里拉帮结派，欺负同学，早早成为小混混。被学校开除，流落社会底层。' },
+  'cai_ji_yin_ji_cai_ruo_yin_wang': { tag: '财星忌印星忌 + 财弱印旺', text: '读书还行，但极其讨厌学习（印忌）；对金钱有强烈的焦虑感，但又不知道怎么赚（财弱忌神）。长期处于精神内耗中。可能考上大学，但极易在大学期间患上严重的抑郁症。' },
+  'cai_ji_yin_ji_cai_ruo_yin_ruo': { tag: '财星忌印星忌 + 财弱印弱', text: '没能力学，没本事赚，还天天焦虑。彻底摆烂。随波逐流的边缘人。' },
+  'cai_yin_wu': { tag: '没有财星破印的十神组合', text: '命局中没有财星破印的组合，现实诱惑与辍学风险不受财星与印星的干扰。学业表现主要取决于其他十神组合的配合。' }
+}
+
+const dayun_text = '重点看15-18岁（中考、高考）、22-24岁（考研）的大运流年。\n这步运如果引动了原局的好格局（比如引动了伤官佩印的喜神），叫"打通任督二脉"，超常发挥。\n这步运如果引动了坏格局（比如引动了财星破印的忌神），叫"关键时刻掉链子"，平时第一，高考落榜。'
+
+const koujue_text = '无印不文：八字一点印星没有，或者印星死绝，别指望高学历，哪怕再聪明也是野路子。\n有印无官，难登金榜：只有印星没有官杀，平时成绩好，但一到大考就拉胯（缺乏应试运气和抗压能力）。\n财多坏印，半途而废：印星本有用，被财星干掉，多半因贪玩、早恋或想赚钱而辍学。\n官印相生，清华北大：最正统的高学历标志，名校苗子。\n食伤制杀，偏门高才：没有印星，全靠食伤去克制官杀。这种人是解题天才，极其聪明，但不爱背书，往往是理科尖子、竞赛保送生，或者走技术突破路线。'
+
+const summarySections = computed(() => {
+  const sections: { title: string, tag: string, text: string }[] = []
+
+  const r1 = results_yinxing[answers.yinxing]
+  if (r1) sections.push({ title: '有没有印星？', tag: r1.tag, text: r1.text })
+
+  const r2 = results_yuezhuhuanjing[answers.yuezhuhuanjing]
+  if (r2) sections.push({ title: '月柱（读书环境）', tag: r2.tag, text: r2.text })
+
+  const q3 = answers.guanyin_xiji
+  if (q3) {
+    if (q3 === 'guan_yin_wu') {
+      const r = guanyin_results['guan_yin_wu']
+      if (r) sections.push({ title: '正统教育的适配度（官印相生）', tag: r.tag, text: r.text })
+    } else {
+      const q4 = answers.guanyin_wangruo
+      if (q4) {
+        const r = guanyin_results[q3 + '_' + q4]
+        if (r) sections.push({ title: '正统教育的适配度（官印相生）', tag: r.tag, text: r.text })
+      }
+    }
+  }
+
+  const q5 = answers.liaoshenduoshi_xiji
+  if (q5) {
+    if (q5 === 'liaoshen_wu') {
+      const r = liaoshen_results['liaoshen_wu']
+      if (r) sections.push({ title: '考场心理状态与输出障碍（枭神夺食）', tag: r.tag, text: r.text })
+    } else {
+      const q6 = answers.liaoshen_wangruo
+      if (q6) {
+        const r = liaoshen_results[q5 + '_' + q6]
+        if (r) sections.push({ title: '考场心理状态与输出障碍（枭神夺食）', tag: r.tag, text: r.text })
+      }
+    }
+  }
+
+  const q7 = answers.shishangzhisha
+  if (q7) {
+    if (q7 === 'shishang_qisha_wu') {
+      const r = shishangzhisha_results['shishang_qisha_wu']
+      if (r) sections.push({ title: '高压下的爆发力与解题技巧（食伤制杀）', tag: r.tag, text: r.text })
+    } else {
+      const q8 = answers.shishangzhisha_wangruo
+      if (q8) {
+        const r = shishangzhisha_results[q7 + '_' + q8]
+        if (r) sections.push({ title: '高压下的爆发力与解题技巧（食伤制杀）', tag: r.tag, text: r.text })
+      }
+    }
+  }
+
+  const q9 = answers.shangguan_yinxing
+  if (q9) {
+    if (q9 === 'shangguan_yin_wu') {
+      const r = shangguan_results['shangguan_yin_wu']
+      if (r) sections.push({ title: '天赋的驯化与学术深度（伤官配印）', tag: r.tag, text: r.text })
+    } else {
+      const q10 = answers.shangguan_yinxing_wangruo
+      if (q10) {
+        const r = shangguan_results[q9 + '_' + q10]
+        if (r) sections.push({ title: '天赋的驯化与学术深度（伤官配印）', tag: r.tag, text: r.text })
+      }
+    }
+  }
+
+  const q11 = answers.qunbikangsha
+  if (q11) {
+    if (q11 === 'qunbi_wu') {
+      const r = qunbikangsha_results['qunbi_wu']
+      if (r) sections.push({ title: '竞争环境中的抗压韧性（群比抗杀）', tag: r.tag, text: r.text })
+    } else {
+      const q12 = answers.qunbikangsha_wangruo
+      if (q12) {
+        const r = qunbikangsha_results[q11 + '_' + q12]
+        if (r) sections.push({ title: '竞争环境中的抗压韧性（群比抗杀）', tag: r.tag, text: r.text })
+      }
+    }
+  }
+
+  const q13 = answers.caixingpoyin
+  if (q13) {
+    if (q13 === 'cai_yin_wu') {
+      const r = caixingpoyin_results['cai_yin_wu']
+      if (r) sections.push({ title: '现实诱惑与辍学风险（财星破印）', tag: r.tag, text: r.text })
+    } else {
+      const q14 = answers.caixingpoyin_wangruo
+      if (q14) {
+        const r = caixingpoyin_results[q13 + '_' + q14]
+        if (r) sections.push({ title: '现实诱惑与辍学风险（财星破印）', tag: r.tag, text: r.text })
+      }
+    }
+  }
+
+  return sections
+})
+
+function restart() {
+  Object.keys(answers).forEach(k => delete answers[k])
+  currentQ.value = 0
+  stage.value = 'question'
+}
+</script>
+
+<template>
+  <div class="xueli-view">
+    <!-- Question -->
+    <div v-if="stage === 'question'" class="card">
+      <div class="question-num">第 {{ currentQ + 1 }} / {{ total }} 题</div>
+      <div class="progress-bar"><div class="progress-fill" :style="{ width: progressPct + '%' }"></div></div>
+      <div class="question-title">{{ currentQuestion?.title }}</div>
+      <div class="options">
+        <div
+          v-for="opt in currentQuestion?.options || []"
+          :key="opt.value"
+          class="option-item"
+          :class="{ selected: answers[currentQuestion!.id] === opt.value }"
+          @click="selectOption(opt.value)"
+        >{{ opt.label }}</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" :disabled="currentQ === 0" @click="prevQ">上一题</button>
+        <button class="btn btn-primary" :disabled="!answers[currentQuestion?.id || '']" @click="nextQ">
+          {{ currentQ < total - 1 ? '下一题' : '查看结果' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div v-if="stage === 'result'" class="card">
+      <div class="question-num">测评结果</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+      <h2 class="result-title">你的十神组合学业画像</h2>
+      <p class="result-desc">以下根据你的作答，逐题呈现对应结果</p>
+
+      <div v-for="(sec, i) in summarySections" :key="i" class="result-section">
+        <h3>{{ sec.title }}</h3>
+        <div style="margin-bottom:8px;"><span class="tag">{{ sec.tag }}</span></div>
+        <p>{{ sec.text }}</p>
+      </div>
+
+      <hr style="border:none;border-top:1px solid #eee;margin:30px 0;">
+      <div class="summary-block">
+        <h4>大运兑现</h4>
+        <p>{{ dayun_text }}</p>
+      </div>
+      <div class="summary-block">
+        <h4>实战口诀</h4>
+        <p>{{ koujue_text }}</p>
+      </div>
+
+      <div class="btn-row"><button class="btn btn-primary" @click="restart">重新测评</button></div>
+      <p class="footer-note">以上内容仅供参考，不构成任何专业建议</p>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.xueli-view { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+
+.question-num { font-size: 13px; color: #999; margin-bottom: 8px; }
+.question-title { font-size: 20px; font-weight: 600; margin-bottom: 30px; color: #222; }
+.progress-bar { height: 4px; background: #e8e8e8; border-radius: 2px; margin-bottom: 30px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--ink-dark); border-radius: 2px; transition: width 0.3s; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-item { border: 1px solid #ddd; border-radius: 6px; padding: 16px 20px; cursor: pointer; transition: all 0.2s; font-size: 15px; user-select: none; }
+.option-item:hover { border-color: #999; background: #fafafa; }
+.option-item.selected { border-color: var(--ink-dark); background: #f0f0f0; font-weight: 500; }
+.btn-row { display: flex; justify-content: space-between; margin-top: 40px; }
+
+.result-title { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+.result-desc { font-size: 13px; color: #999; margin-bottom: 30px; }
+
+.result-section { margin-bottom: 30px; }
+.result-section h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #222; border-left: 3px solid var(--ink-dark); padding-left: 10px; }
+.result-section p { font-size: 14px; color: #555; padding-left: 13px; white-space: pre-line; }
+
+.tag { display: inline-block; background: #f0f0f0; color: #555; font-size: 12px; padding: 2px 10px; border-radius: 3px; margin-right: 6px; margin-bottom: 6px; }
+
+.summary-block { background: #fafafa; border: 1px solid #eee; border-radius: 6px; padding: 20px; margin-bottom: 20px; }
+.summary-block h4 { font-size: 15px; font-weight: 600; margin-bottom: 8px; color: #333; }
+.summary-block p { font-size: 13px; color: #666; white-space: pre-line; }
+
+.footer-note { text-align: center; font-size: 12px; color: #bbb; margin-top: 30px; }
+</style>

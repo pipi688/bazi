@@ -1,0 +1,251 @@
+<script setup lang="ts">
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+
+const stage = ref<'welcome' | 'question' | 'result'>('welcome')
+const currentStep = ref(0)
+const answers = reactive<Record<number, number>>({})
+const totalQ = 8
+
+const progressPct = computed(() => Math.round((currentStep.value + 1) / totalQ * 100))
+
+const questions = [
+  {
+    title: '一、判断身强身弱',
+    desc: '请选择最符合您当前体质状态的描述',
+    options: [
+      { text: '身强', result: '身强：能量过剩，好比气球吹太满，容易爆。' },
+      { text: '身弱', result: '身弱：底子虚，好比灯芯太细，风一吹就灭。' },
+      { text: '特殊格局（从格）', result: '特殊格局（从格）：需找"所从之神"（即命局最旺的那个五行）的旺衰来判断。' }
+    ]
+  },
+  {
+    title: '二、五行旺无制（总体）',
+    desc: '请选择您八字中最旺且缺乏制约的五行',
+    options: [
+      { text: '木旺无制', result: '木旺无制：肝火旺，容易偏头痛、脾气暴躁、高血压、甲亢。' },
+      { text: '火旺无制', result: '火旺无制：心火旺盛，容易失眠多梦、心跳过速、口腔溃疡、甚至心脑血管出血。' },
+      { text: '土旺无制', result: '土旺无制：脾胃积滞，容易腹胀、高血脂、肥胖、结石。' },
+      { text: '金旺无制', result: '金旺无制：肺气过亢，容易便秘、皮肤敏感起疹子、干咳。' },
+      { text: '水旺无制', result: '水旺无制：肾阳泛滥（或阴寒重），容易水肿、泌尿系统感染、怕冷。' }
+    ]
+  },
+  {
+    title: '三、具体的五行旺无制',
+    desc: '请选择最贴合您症状的具体天干五行旺无制类型',
+    options: [
+      { text: '甲木旺', result: '甲木旺无制：肝阳上亢，偏头痛、胆囊炎（急性）、高血压、脾气暴躁。' },
+      { text: '乙木旺', result: '乙木旺无制：肝风内动，神经官能症（失眠、焦虑）、肢体震颤、静脉曲张、甲亢。' },
+      { text: '丙火旺', result: '丙火旺无制：火气上炎，高烧不退、舌疮、眼底出血、心动过速。' },
+      { text: '丁火旺', result: '丁火旺无制：阴虚火旺，五心烦热、暗疮、反复口腔溃疡、心律不齐。' },
+      { text: '戊土旺', result: '戊土旺无制：胃土僵化，顽固性便秘、胃结石、胃壁增厚。' },
+      { text: '己土旺', result: '己土旺无制：脾土困顿，湿气极重、水肿、大便粘腻、高血脂。' },
+      { text: '庚金旺', result: '庚金旺无制：燥金克木，剧烈干咳无痰、大便秘结、骨刺、皮肤极度干燥起皮。' },
+      { text: '辛金旺', result: '辛金旺无制：金气肃杀，敏感、鼻炎频发、皮肤过敏、毛发干枯。' },
+      { text: '壬水旺', result: '壬水旺无制：寒水泛滥，急性水肿、脑积水、爆发性泌尿系统感染。' },
+      { text: '癸水旺', result: '癸水旺无制：浊阴上逆，内分泌严重紊乱、白带清稀量多、阴寒凝聚。' }
+    ]
+  },
+  {
+    title: '四、五行旺无制的病理形式',
+    desc: '请选择对应的病理表现形式',
+    options: [
+      { text: '冲', result: '五行旺无制病理形式：冲——代表急性、外伤、突变。' },
+      { text: '刑', result: '五行旺无制病理形式：刑——代表慢性折磨、暗伤、精神问题。' },
+      { text: '害', result: '五行旺无制病理形式：害——往往是慢性疾病，或者被误诊、吃错药导致的损伤。' },
+      { text: '合', result: '五行旺无制病理形式：合——一旦被"合住"走不掉，在身体上表现为"气滞血瘀"，时间长了就是囊肿、结节、增生。' },
+      { text: '伏吟', result: '五行旺无制病理形式：伏吟——旧病复发。' },
+      { text: '无明显受伤', result: '五行旺无制病理形式：无明显受伤。' }
+    ]
+  },
+  {
+    title: '五、五行太弱（总体）',
+    desc: '请选择您八字中最为虚弱的五行',
+    options: [
+      { text: '木太弱', result: '木太弱：肝血不足，容易近视、神经衰弱、抽筋、颈椎腰椎不好（筋骨问题）。' },
+      { text: '火太弱', result: '火太弱：心气虚，容易胸闷、气血循环极差、手脚冰凉、抑郁症（心神失养）。' },
+      { text: '土太弱', result: '土太弱：胃溃疡、消化不良、极度消瘦或虚胖、严重的疲劳感（脾胃是后天之本，土弱则全身没劲）。' },
+      { text: '金太弱', result: '金太弱：肺气虚弱，极易感冒、哮喘、鼻炎、皮肤干枯粗糙、容易得肺炎或肺部结节。' },
+      { text: '水太弱', result: '水太弱：肾精亏虚，容易脱发、记忆力减退、腰酸背痛、妇科/男科问题、骨骼脆弱。' }
+    ]
+  },
+  {
+    title: '六、具体的五行太弱',
+    desc: '请选择最贴合您症状的具体天干五行太弱类型',
+    options: [
+      { text: '甲木弱', result: '甲木太弱：胆气虚，四肢麻木，容易惊醒，指甲易断。' },
+      { text: '乙木弱', result: '乙木太弱：肝血不足，视力减退，月经量少，容易抽筋。' },
+      { text: '丙火弱', result: '丙火太弱：心阳不振，怕冷、手脚冰凉、血液循环极差、低血压。' },
+      { text: '丁火弱', result: '丁火太弱：心血亏虚，胸闷气短、轻度抑郁、目光呆滞。' },
+      { text: '戊土弱', result: '戊土太弱：胃气下陷，胃下垂、肌肉萎缩、重度消瘦。' },
+      { text: '己土弱', result: '己土太弱（透干无根）：脾不化湿，长期慢性腹泻、营养吸收不了、极度疲倦。' },
+      { text: '庚金弱', result: '庚金太弱（被旺神直接克）：大肠无力，大便不成形或便秘腹泻交替、咳喘无力。' },
+      { text: '辛金弱', result: '辛金太弱（被旺神过度生泄）：肺气虚，极易感冒、皮肤脆弱易留疤、声音微弱。' },
+      { text: '壬水弱', result: '壬水太弱：膀胱气化无力，尿频、尿急、遗尿、耳鸣（如潮水声）。' },
+      { text: '癸水弱', result: '癸水太弱：肾精亏枯，更年期提前、不孕不育、干眼症、记忆力断崖式下降。严防突发性耳聋、脑供血不足导致的眩晕猝倒。' }
+    ]
+  },
+  {
+    title: '七、五行太弱的病理形式',
+    desc: '请选择对应的病理表现形式',
+    options: [
+      { text: '冲', result: '五行太弱病理形式：冲——代表急性、外伤、突变。' },
+      { text: '刑', result: '五行太弱病理形式：刑——代表慢性折磨、暗伤、精神问题。' },
+      { text: '害', result: '五行太弱病理形式：害——往往是慢性疾病，或者被误诊、吃错药导致的损伤。' },
+      { text: '合', result: '五行太弱病理形式：合——一旦被"合住"走不掉，在身体上表现为"气滞血瘀"，时间长了就是囊肿、结节、增生。' },
+      { text: '伏吟', result: '五行太弱病理形式：伏吟——旧病复发。' },
+      { text: '无明显受伤', result: '五行太弱病理形式：无明显受伤。' }
+    ]
+  },
+  {
+    title: '八、缺失五行分析',
+    desc: '请选择您八字中缺失五行的具体情况',
+    options: [
+      { text: '缺喜神', result: '缺喜神：代表亚健康、易疲劳、恢复慢，大病没有小病不断。一旦出现该五行（被补上），却被命局旺神反克，直接转危重急症。' },
+      { text: '缺忌神', result: '缺忌神：代表身强体健，罕见急症，能吃能睡。一旦出现该五行（被补上），且被命局旺神制服，只是轻微炎症或外伤，不会伤及根本。' },
+      { text: '缺闲神', result: '缺闲神：代表该脏腑功能正常，无论大运来不来，基本不影响健康大局。' },
+      { text: '不缺五行', result: '不缺五行：命局五行齐全，需结合旺衰和大运流年综合判断。' }
+    ]
+  }
+]
+
+const dayunText = `<h3>大运流年分析参考</h3>
+<p><strong>1. 最旺五行的影响（气机过亢，高压锅效应）</strong></p>
+<p><strong>原局旺，大运生扶（加压爆炸期）：</strong>这几年你要极度小心，你八字里最旺五行的气压本来就太高了，现在又加火（生扶），极易爆发严重的急症。这就好比锅炉气压太高，随时有炸裂的风险，必须提前去大医院排查。</p>
+<p><strong>原局旺，大运克制它（强行压制期）：</strong>这个大运看起来是克制了病气，但过程会很痛苦。这往往对应着你可能在使用猛药或激素治疗，病症是被按住了，但你会感觉到明显的排毒反应或药物副作用。病根还没拔掉，只是暂时被压住了，千万别觉得好了就停药。</p>
+<p><strong>原局旺，大运泄耗它（最佳疏导期）：</strong>这是你身体最好的阶段！比如金生水，代表肺部淤积的浊气终于找到了排出的通道（化痰排邪）。虽然排病时人会觉得累，但这是身体在主动排毒，预后极好，趁这几年把底子养好。</p>
+<p style="margin-top:10px"><strong>2. 最弱五行的影响（气机极衰，枯木逢春/雪上加霜）</strong></p>
+<p><strong>原局弱，大运克制它（摧枯拉朽期）：</strong>这是你健康最凶险的年份！最弱五行本来就弱如游丝，现在克制大运一来直接打压，极易出现突发的器质性危机。这是真正的雪上加霜，必须苟住，少生气，少熬夜，不做任何危险动作。</p>
+<p><strong>原局弱，大运生扶它（虚不受补期）：</strong>这是救命的大运！但要注意"虚不受补"的现象。就像给枯死的树浇水，水可能直接流走了。现实中可能表现为病情反复，指标忽高忽低，但整体体能是在暗中恢复的。别因为短期波动就乱换药，要有耐心。</p>
+<p><strong>原局弱，大运泄耗它（油尽灯枯期）：</strong>这步运不是长了新病，而是原有的虚弱发生了"质变"。原本的神经衰弱可能转变为断崖式的记忆力下降和重度抑郁；原本的眼睛干涩可能演变成实质性的视力模糊。这不是气机不通了，而是油灯没油了，核心是"补漏"而不是"泄火"。</p>
+<p style="margin-top:10px"><strong>3. 最缺五行的影响（真空地带，补缺与反噬）</strong></p>
+<p><strong>补上了且不被克（系统重启期）：</strong>你原局缺的五行终于来了，且没被克。这叫久旱逢甘霖，代表你的免疫系统正在重建。以前那些莫名其妙的亚健康（失眠、脱发），这段时间可能会不治而愈，体质会迎来一次升级。</p>
+<p><strong>补上了但立即被旺神克死（免疫崩溃期——最凶险！）：</strong>这是所有健康格局里最要命的一种！缺的五行好不容易来了，却被命局里极旺的五行瞬间克死。极易表现为突发性的急症（如突发肾衰竭、严重药物过敏休克、急性尿毒症）。缺的东西一旦被引来又被杀，起病最急、最防不胜防。遇到这种流年，必须远离一切不确定的食物、药物和环境。</p>
+<p><strong>没补上它（长期亚健康期）：</strong>大运流年没把缺的五行补上，你也不会得什么要命的大病，但就是永远处于一种"说不出的难受"中。长期的慢性疲劳、睡不醒、消化不良，去医院查所有指标都正常，但就是没精神，只能靠调理慢慢熬。</p>`
+
+function selectOption(optionIndex: number) {
+  answers[currentStep.value] = optionIndex
+}
+
+function startTest() {
+  stage.value = 'question'
+  currentStep.value = 0
+  Object.keys(answers).forEach(k => delete answers[Number(k)])
+}
+
+function prevQuestion() {
+  if (currentStep.value > 0) {
+    currentStep.value--
+  }
+}
+
+function nextQuestion() {
+  if (answers[currentStep.value] === undefined) {
+    alert('请先选择一个选项再继续')
+    return
+  }
+  if (currentStep.value < totalQ - 1) {
+    currentStep.value++
+  } else {
+    stage.value = 'result'
+  }
+}
+
+function restart() {
+  Object.keys(answers).forEach(k => delete answers[Number(k)])
+  currentStep.value = 0
+  stage.value = 'welcome'
+}
+
+const summaryHtml = computed(() => {
+  if (stage.value !== 'result') return ''
+  let html = '<div class="summary-section"><h3>详细分析</h3>'
+  questions.forEach((q, i) => {
+    html += `<div class="result-box">`
+    html += `<p><strong>${q.title}</strong></p>`
+    html += `<p>${q.options[answers[i]].result}</p>`
+    html += `</div>`
+  })
+  html += '</div>'
+  return html
+})
+
+// keyboard nav
+function handleKeydown(e: KeyboardEvent) {
+  if (stage.value !== 'question') return
+  if (e.key === 'ArrowRight' || e.key === 'Enter') {
+    e.preventDefault()
+    nextQuestion()
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault()
+    prevQuestion()
+  } else if (/^[1-9]$/.test(e.key)) {
+    const idx = parseInt(e.key) - 1
+    const q = questions[currentStep.value]
+    if (idx < q.options.length) {
+      answers[currentStep.value] = idx
+    }
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', handleKeydown))
+onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
+</script>
+
+<template>
+  <div class="jiankang-view">
+    <div v-if="stage === 'welcome'" class="card start-page">
+      <div>
+        <h2>欢迎使用健康分析问卷</h2>
+        <p>请根据您的实际情况，依次回答以下问题。<br>共 8 道选择题，完成后将生成个性化分析结果。</p>
+        <button class="btn btn-primary" @click="startTest">开始答题</button>
+      </div>
+    </div>
+
+    <div v-if="stage === 'question'" class="card">
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" :style="{ width: progressPct + '%' }"></div></div>
+        <div class="progress-text">{{ currentStep + 1 }} / {{ totalQ }}</div>
+      </div>
+      <h2>{{ questions[currentStep].title }}</h2>
+      <div class="desc">{{ questions[currentStep].desc }}</div>
+      <ul class="option-list">
+        <li v-for="(opt, i) in questions[currentStep].options" :key="i">
+          <label :class="{ selected: answers[currentStep] === i }" @click="selectOption(i)">
+            <input type="radio" :name="'q' + currentStep" :checked="answers[currentStep] === i" />
+            <span>{{ opt.text }}</span>
+          </label>
+        </li>
+      </ul>
+      <div class="btn-row">
+        <span v-if="currentStep === 0"></span>
+        <button v-else class="btn" @click="prevQuestion">上一题</button>
+        <button class="btn btn-primary" @click="nextQuestion">{{ currentStep === totalQ - 1 ? '查看结果' : '下一题' }}</button>
+      </div>
+    </div>
+
+    <div v-if="stage === 'result'" class="card">
+      <h2 style="margin-bottom:20px">您的健康分析结果</h2>
+      <div v-html="summaryHtml"></div>
+      <div class="dayun-section" v-html="dayunText"></div>
+      <div style="text-align:center; margin-top: 24px;">
+        <button class="btn btn-primary" @click="restart">重新测试</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.jiankang-view { max-width: 800px; margin: 0 auto; padding: 30px 20px; }
+
+.start-page { text-align: center; padding: 60px 32px; }
+.start-page h2 { font-size: 22px; margin-bottom: 16px; font-weight: 500; color: var(--ink-dark); }
+.start-page p { color: #888; font-size: 14px; margin-bottom: 32px; }
+
+.desc { font-size: 14px; color: #888; margin-bottom: 24px; }
+
+.btn-row { margin-top: 28px; display: flex; justify-content: space-between; }
+
+.dayun-section { margin-top: 32px; padding: 20px; background: #f0f3f7; border-radius: 8px; font-size: 14px; line-height: 1.8; color: #444; }
+.dayun-section :deep(h3) { font-size: 16px; font-weight: 500; margin-bottom: 10px; color: var(--ink-dark); }
+.dayun-section :deep(p) { margin-bottom: 4px; }
+</style>
