@@ -192,6 +192,8 @@ function isActive(path: string): boolean {
   max-width: 960px;
   margin: 0 auto;
   padding: 24px 32px;
+  height: calc(100vh - 56px);
   min-height: calc(100vh - 56px);
+  overflow: scroll;
 }
 </style>

@@ -143,7 +143,7 @@ const questions = [
     { value: '有食伤_财旺', text: '有食伤 + 财星旺' }, { value: '有食伤_财弱', text: '有食伤 + 财星弱' }, { value: '无食伤', text: '无食伤' }
   ]},
   { id: 'q_baobiao', title: '财星有没有保镖（多选）', type: 'multi', options: [
-    { value: '有保镖', text: '有保镖' }, { value: '无保镖_比劫', text: '无保镖（比劫夺财）' }, { value: '无保镖_印耗', text: '无保镖（印耗财）' }
+    { value: '有保镖_官杀', text: '有保镖（官杀护财）' }, { value: '无保镖_比劫', text: '无保镖（比劫夺财）' }, { value: '无保镖_印耗', text: '无保镖（印耗财）' }
   ]},
   { id: 'q_caiku', title: '有没有财库', type: 'single', options: [{ value: '有财库', text: '有财库' }, { value: '没有财库', text: '没有财库' }] },
   { id: 'q_caiku_yindong', title: '命局的财库有没有被引动', type: 'single', dependsOn: 'q_caiku', dependsValue: '有财库',
@@ -174,14 +174,14 @@ const analysisText: Record<string, string> = {
   '有食伤_财旺': '食伤代表你的头脑、点子、口才、技术。有食伤生财，说明你的钱是"活水"。',
   '有食伤_财弱': '别想着去创业或者靠技能赚钱，等待源头运或者源头被引动时，再去做。',
   '无食伤': '八字里有财星，但没有食神、伤官来生它。钱只能靠死工资、或者意外之财。',
-  '有保镖': '适合合伙做生意，有人帮你管账、管人，钱丢不了。',
+  '有保镖_官杀': '适合合伙做生意，有人帮你管账、管人，钱丢不了。',
   '无保镖_比劫': '赚到钱马上就被兄弟借走、合伙人卷跑、或者乱投资亏掉。绝对不能合伙，不能借钱给人。',
   '无保镖_印耗': '花钱在提升自己、学习、健康或家庭上，属于必要支出；或因固执、保守而影响财务效率。',
   '有财库': '原局有财库',
   '没有财库': '原局没有财库',
   '财库无损': '原局有财库且没有被刑冲破害。极善理财，积蓄惊人。',
-  '财库被冲被害被刑': '保险箱漏了个洞，赚多少漏多少，存不住现钱。',
-  '财库不开': '有库但没被冲开，钱都压在固定资产里，得等特定流年才能爆发套现。',
+  '财库被冲被害被刑': '这叫"保险箱漏了个洞"。赚多少漏多少，存不住现钱，全变成了消耗品（买车、买包、应酬）。',
+  '财库不开': '有库但没被冲开，钱都压在固定资产里，或者手里有资源变现不了，得等特定流年（比如辰年冲戌）才能爆发套现。',
   'dayun_liunian': '<h4 style="margin: 16px 0 8px 0; font-size: 14px;">1. 看大运是喜是忌</h4><p style="margin-bottom: 8px;">大运是喜神，尽管去折腾；大运是忌神，越折腾越惨。</p><h4 style="margin: 16px 0 8px 0; font-size: 14px;">2. 看流年</h4><p style="margin-bottom: 4px;"><strong>身强财喜</strong>：最喜欢走财运、食伤运，遇到财星流年满仓干！</p><p style="margin-bottom: 4px;"><strong>身强财忌</strong>：遇到财星流年赶紧扔！赚到立刻花掉，绝不留现金。</p><p style="margin-bottom: 4px;"><strong>身弱财喜</strong>：遇到财星流年找人帮！单打独斗必亏。</p><p style="margin-bottom: 8px;"><strong>身弱财忌</strong>：必须"借势"，找人帮，靠着别人才能喝口汤。</p><h4 style="margin: 16px 0 8px 0; font-size: 14px;">3. 看流年财星是否到位</h4><p style="margin-bottom: 4px;"><strong>流年遇到正财</strong>：通过本职工作、固定工资获得丰厚回报。钱来得稳，能存住。</p><p style="margin-bottom: 4px;"><strong>流年遇到偏财</strong>：意外之财、投资收益。但要注意是不是"过路财神"。</p><h4 style="margin: 16px 0 8px 0; font-size: 14px;">4. 看流年有没有生财的源头</h4><p style="margin-bottom: 4px;"><strong>原局有财，流年遇食伤</strong>：才华直接变成真金白银。</p><p style="margin-bottom: 8px;"><strong>原局无财，流年遇食伤</strong>：忙活一年，赚了名声没赚到钱。</p><h4 style="margin: 16px 0 8px 0; font-size: 14px;">5. 看流年有没有财星的护卫</h4><p style="margin-bottom: 4px;"><strong>官星护财</strong>：赚钱极有秩序，有贵人撑腰。（大吉）</p><p style="margin-bottom: 8px;"><strong>比劫夺财</strong>：赚到钱马上被兄弟借钱不还、合伙人卷款。（注意）</p><h4 style="margin: 16px 0 8px 0; font-size: 14px;">6. 看流年中财库的情况</h4><p style="margin-bottom: 4px;"><strong>财库被冲开</strong>：为喜神则发大财；为忌神则花钱如流水。</p><p style="margin-bottom: 4px;"><strong>财库被刑坏</strong>：钱在不知不觉中流失。</p><p style="margin-bottom: 4px;"><strong>财库被合</strong>：为喜神则资金高效整合；为忌神则被套牢。</p>'
 }
 

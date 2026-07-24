@@ -176,7 +176,7 @@ function showSummary() {
   window.scrollTo(0, 0)
 }
 
-const texts: Record<string, string> = {
+const texts = computed(() => ({
   step1: jobTexts[answers.step1] || '',
   step2: industryTexts[answers.step2] || '',
   step3: platformTexts[answers.step3] || '',
@@ -187,8 +187,7 @@ const texts: Record<string, string> = {
   step8: statusTexts[answers.step8] || '',
   step9: comfortTexts[answers.step9] || '',
   step10: dayunTexts[answers.step10] || ''
-}
-
+}))
 const summaryItmes = computed(() => {
   const items = []
   for (let i = 1; i <= 10; i++) {
@@ -199,7 +198,7 @@ const summaryItmes = computed(() => {
       num: i,
       label: stepLabels[key],
       val,
-      text: texts[key] || ''
+      text: texts.value[key] || ''
     })
   }
   return items
