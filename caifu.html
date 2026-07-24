@@ -214,7 +214,7 @@ $(function() {
       title: '财星有没有保镖（多选）',
       type: 'multi',
       options: [
-        { value: '有保镖', text: '有保镖' },
+        { value: '有保镖_官杀', text: '有保镖（官杀护财）' },
         { value: '无保镖_比劫', text: '无保镖（比劫夺财）' },
         { value: '无保镖_印耗', text: '无保镖（印耗财）' }
       ]
@@ -267,13 +267,13 @@ $(function() {
     '身弱+财星旺+喜神': '赚钱的机会多，但因为"身弱"底盘不稳，每天看着这笔巨款，内心都处于"如履薄冰"的极度恐慌中。你极其害怕失去它，对金钱有极度的焦虑症，像个提心吊胆的守财奴，表面风光，内心恐惧。\n建议：立刻用钱去买"土"（房产、大额保单、黄金）。把钱死死锁在固定资产里。你没有能力驾驭这笔钱，那就把钱"寄存"在一个强大且靠谱的系统或人身上（比如交给绝对忠诚的家族信托、极度老实的家族企业）。让系统/别人帮你守财，你只享受利息，绝对不要碰本金。',
     '身弱+财星旺+忌神': '满眼是钱，但身体扛不住。精力不济、资源太多导致焦虑或生病。因钱生病、因钱受累、财来财去。误以为大钱是"保护伞"，其实是"吸血鬼"。\n建议：如果那个平台/伴侣在吸你的血，必须立刻切断联系，哪怕你眼睁睁看着大钱没了，也必须跑。你本来身弱，再耗下去你连命都没了。活着比有钱重要。',
     '身弱+财星弱+喜神': '极度渴望钱来保护你，但现实中不仅没钱，连赚钱的线索都找不到。哪怕是一点点的小财务波动，都能让你陷入极度的焦虑。极度缺乏安全感。想赚大钱，但底盘太弱，一碰大钱就崩溃。\n建议：不要去想赚大钱，那会把你压垮。每天强迫自己存个几十块钱，或者通过极其微小但确定的劳动（比如每天坚持做一件枯燥的手工活）赚到小钱。这种"微小的确定性"能一点点修补你极其脆弱的底层自信。先有小钱，才能撑起你那虚弱的身。',
-    '身弱+财星弱+忌神': '能力弱，对钱极其缺乏安全感，加上现实中极度匮乏。这种极度的匮乏感，反而容易激发你不顾一切的"贪念"。你因为极度渴望翻身，反而极其容易掉进极其隐蔽的"杀猪盘"、高利贷或极其糟糕的合伙人手里。你连判断对错的能力都没有，被极其隐蔽的套路死死套牢，被暗中吸干，沦为被暗中控制的"提款机"。\n建议：三不原则：不接触、不转账、不借钱/不借钱出。如果被套牢，绝对不要试图通过"赚更多钱"来解套。物理拉黑所有相关人，切断一切财务往来。宁可成为老赖，也绝对不能再投钱进去填坑。',
+    '身弱+财星弱+忌神': '能力弱，对钱极其缺乏安全感，加上现实中极度匮乏。这种极度的匮乏感，反而容易激发你不顾一切的"贪念"。你因为极度渴望翻身，反而极其容易掉进极其隐蔽的"杀猪盘"、高利贷或极其糟糕的合伙人手里。你连判断对错的能力都没有，被极其隐蔽的套路死死套牢，被暗中吸干，沦为被暗中控制的"提款机"。\n建议：三不原则：不接触、不转账、不借钱/不借钱出。如果被套牢，绝对不要试图通过"赚更多钱"来解套。物理拉黑所有相关人，切断一切财务往来。宁可成为老赖，也绝对不能再投钱进去填坑。宁可得罪人，绝对不要再往坑里扔钱。宁可把烂摊子交给法律，也不要自己拿钱去填坑。',
 
     '有食伤_财旺': '食伤代表你的头脑、点子、口才、技术。有食伤生财，说明你的钱是"活水"，是用脑子赚来的，越滚越大。',
     '有食伤_财弱': '别想着去创业或者靠技能赚钱，等待源头运或者源头被引动时，再去做。其他时间通过其他方式赚钱。',
     '无食伤': '八字里有财星，但没有食神、伤官来生它。钱只能靠死工资、或者意外之财（比如拆迁，但极少）。',
 
-    '有保镖': '适合合伙做生意，有人帮你管账、管人，钱丢不了。',
+    '有保镖_官杀': '如果比劫多，但有官杀（正官/七杀）镇着比劫，这叫“有保镖”。适合合伙做生意，有人帮你管账、管人，钱丢不了。',
     '无保镖_比劫': '赚到钱马上就被兄弟借走、合伙人卷跑、或者乱投资亏掉。这种人绝对不能合伙，不能借钱给人。',
     '无保镖_印耗': '花钱在提升自己、学习、健康或家庭上，属于必要支出；或因固执、保守或家庭负担而影响财务效率。',
 
@@ -450,14 +450,14 @@ $(function() {
     var html = '';
 
     // ---- 基本信息 ----
-    html += '<div class="info-box result-section">'
-          + '<h3>基本信息</h3>'
-          + '<div class="info-row"><span class="info-label">有没有财星</span><span class="info-value">' + (answers['q_has_caixing'] || '未选择') + '</span></div>'
-          + '<div class="info-row"><span class="info-label">财星类型</span><span class="info-value">' + (answers['q_caixing_type'] || '未选择') + '</span></div>'
-          + '<div class="info-row"><span class="info-label">身强/身弱</span><span class="info-value">' + (answers['q_shen_qiang_ruo'] || '未选择') + '</span></div>'
-          + '<div class="info-row"><span class="info-label">财星喜忌</span><span class="info-value">' + (answers['q_caixing_xi_ji'] || '未选择') + '</span></div>'
-          + '<div class="info-row"><span class="info-label">财星旺衰</span><span class="info-value">' + (answers['q_caixing_wang_shuai'] || '未选择') + '</span></div>'
-          + '</div>';
+    // html += '<div class="info-box result-section">'
+    //       + '<h3>基本信息</h3>'
+    //       + '<div class="info-row"><span class="info-label">有没有财星</span><span class="info-value">' + (answers['q_has_caixing'] || '未选择') + '</span></div>'
+    //       + '<div class="info-row"><span class="info-label">财星类型</span><span class="info-value">' + (answers['q_caixing_type'] || '未选择') + '</span></div>'
+    //       + '<div class="info-row"><span class="info-label">身强/身弱</span><span class="info-value">' + (answers['q_shen_qiang_ruo'] || '未选择') + '</span></div>'
+    //       + '<div class="info-row"><span class="info-label">财星喜忌</span><span class="info-value">' + (answers['q_caixing_xi_ji'] || '未选择') + '</span></div>'
+    //       + '<div class="info-row"><span class="info-label">财星旺衰</span><span class="info-value">' + (answers['q_caixing_wang_shuai'] || '未选择') + '</span></div>'
+    //       + '</div>';
 
     // ---- 综合汇总表 ----
     html += '<div class="result-section">'
